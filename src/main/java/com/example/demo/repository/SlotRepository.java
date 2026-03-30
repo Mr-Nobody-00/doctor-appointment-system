@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface SlotRepository extends JpaRepository<Slot, Long> {
     List<Slot> findByDoctorIdAndDateAndIsBooked(Long doctorId, String date, boolean isBooked);
+    boolean existsByDoctorIdAndDateAndStartTime(Long doctorId, String date, String startTime);
 }

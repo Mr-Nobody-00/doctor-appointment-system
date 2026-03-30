@@ -194,7 +194,7 @@ React (5173) → Axios HTTP → Spring Boot (8080) → JPA → H2 Database
 
 ## Team
 
-- **[Your Name]** — Full-stack Development, Backend APIs, JWT Auth, React Integration
-- **[Name 2]** — Frontend Components, UI Design
-- **[Name 3]** — UI Styling, Testing, Git Management
-- **[Name 4]** — Documentation, Demo Preparation
+- **Hariharan Ramanathan** — Backend Core, JWT Authentication, Security Configuration, REST API Integration
+- **Ram Prakash T** — Frontend Development, React Pages, UI Components, State Management
+- **Nidish BR** — Backend Models, JPA Entities, Repositories, Database Layer
+- **Yogalakshmi K** — Backend Controllers, Business Logic, API Endpoints, Documentation

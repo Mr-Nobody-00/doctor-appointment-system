@@ -63,6 +63,11 @@ public class SlotController {
                     String startTime = parts[2].trim();
                     String endTime = parts[3].trim();
 
+                    if (slotRepository.existsByDoctorIdAndDateAndStartTime(doctorId, date, startTime)) {
+                        errors.add("Line " + line + ": Duplicate slot — Doctor " + doctorId + " already has a slot at " + startTime + " on " + date);
+                        continue;
+                    }
+
                     Doctor doctor = doctorRepository.findById(doctorId).orElseThrow();
 
                     Slot slot = new Slot();

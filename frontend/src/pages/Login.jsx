@@ -10,6 +10,10 @@ function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault()
+    if (!email.trim()) { setError('Please enter your email'); return }
+    if (!password.trim()) { setError('Please enter your password'); return }
+
+    setError('')
     axios.post('http://localhost:8080/api/auth/login', { email, password })
       .then(res => {
         localStorage.setItem('token', res.data.token)
@@ -36,11 +40,11 @@ function Login() {
         <form onSubmit={handleLogin}>
           <div className="form-group">
             <label>Email</label>
-            <input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="email" placeholder="Enter your email" value={email} onChange={e => { setEmail(e.target.value); setError('') }} />
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input type="password" placeholder="Enter your password" value={password} onChange={e => { setPassword(e.target.value); setError('') }} />
           </div>
           <button type="submit" className="btn btn-primary btn-full">Sign In</button>
         </form>

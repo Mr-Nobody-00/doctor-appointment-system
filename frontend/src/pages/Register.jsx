@@ -12,13 +12,19 @@ function Register() {
 
   const handleRegister = (e) => {
     e.preventDefault()
+    if (!name.trim()) { setError('Please enter your name'); return }
+    if (!email.trim()) { setError('Please enter your email'); return }
+    if (!password.trim()) { setError('Please enter a password'); return }
+    if (password.length < 4) { setError('Password must be at least 4 characters'); return }
+
+    setError('')
     axios.post('http://localhost:8080/api/auth/register', { name, email, password })
       .then(() => {
         setMessage('Registration successful! Redirecting...')
         setError('')
         setTimeout(() => navigate('/'), 2000)
       })
-      .catch(() => { setError('Registration failed. Try again.'); setMessage('') })
+      .catch(() => { setError('Registration failed. Email may already be in use.'); setMessage('') })
   }
 
   return (
@@ -33,15 +39,15 @@ function Register() {
         <form onSubmit={handleRegister}>
           <div className="form-group">
             <label>Full Name</label>
-            <input type="text" placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)} required />
+            <input type="text" placeholder="Enter your name" value={name} onChange={e => { setName(e.target.value); setError('') }} />
           </div>
           <div className="form-group">
             <label>Email</label>
-            <input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input type="email" placeholder="Enter your email" value={email} onChange={e => { setEmail(e.target.value); setError('') }} />
           </div>
           <div className="form-group">
             <label>Password</label>
-            <input type="password" placeholder="Create a password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input type="password" placeholder="Create a password" value={password} onChange={e => { setPassword(e.target.value); setError('') }} />
           </div>
           <button type="submit" className="btn btn-primary btn-full">Register</button>
         </form>

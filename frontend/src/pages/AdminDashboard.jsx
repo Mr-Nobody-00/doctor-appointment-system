@@ -47,14 +47,23 @@ function AdminDashboard() {
     axios.get(`http://localhost:8080/api/appointments/summary?date=${date}`, { headers }).then(res => setSummary(res.data)).catch(() => {})
   }
 
+  const [formError, setFormError] = useState('')
+
   const addSpecialty = (e) => {
     e.preventDefault()
+    if (!specName.trim()) { setFormError('Please enter a specialty name'); return }
+    setFormError('')
     axios.post('http://localhost:8080/api/specialties', { name: specName }, { headers })
       .then(() => { fetchSpecialties(); setSpecName(''); alert('Specialty added!') })
   }
 
   const addDoctor = (e) => {
     e.preventDefault()
+    if (!docName.trim()) { setFormError('Please enter the doctor name'); return }
+    if (!docSpecialty) { setFormError('Please select a specialty'); return }
+    if (docMode === 'ONLINE' && !docVideoLink.trim()) { setFormError('Please enter a video consultation link'); return }
+    if (docMode === 'OFFLINE' && !docClinicAddress.trim()) { setFormError('Please enter the clinic address'); return }
+    setFormError('')
     axios.post('http://localhost:8080/api/doctors', {
       name: docName, specialtyId: docSpecialty, mode: docMode, videoLink: docVideoLink, clinicAddress: docClinicAddress
     }, { headers })
@@ -63,6 +72,12 @@ function AdminDashboard() {
 
   const addSlot = (e) => {
     e.preventDefault()
+    if (!slotDoctor) { setFormError('Please select a doctor'); return }
+    if (!slotDate) { setFormError('Please select a date'); return }
+    if (!slotStart) { setFormError('Please enter start time'); return }
+    if (!slotEnd) { setFormError('Please enter end time'); return }
+    if (slotStart >= slotEnd) { setFormError('End time must be after start time'); return }
+    setFormError('')
     axios.post('http://localhost:8080/api/slots', {
       doctorId: slotDoctor, date: slotDate, startTime: slotStart, endTime: slotEnd
     }, { headers })
@@ -110,6 +125,7 @@ function AdminDashboard() {
       </div>
 
       <div className="content">
+        {formError && <div className="error-msg" style={{marginBottom: '20px'}}>{formError}</div>}
         {activeTab === 'specialties' && (
           <div className="admin-section">
             <div className="step-card">
@@ -149,10 +165,16 @@ function AdminDashboard() {
                 </div>
                 <div className="form-group">
                   <label>Consultation Mode</label>
-                  <select value={docMode} onChange={e => setDocMode(e.target.value)} className="select-input">
-                    <option value="ONLINE">Online (Teleconsultation)</option>
-                    <option value="OFFLINE">Offline (In-Clinic)</option>
-                  </select>
+                  <div style={{display: 'flex', gap: '20px', marginTop: '8px'}}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 500, color: docMode === 'ONLINE' ? '#2563eb' : '#64748b'}}>
+                      <input type="radio" name="docMode" value="ONLINE" checked={docMode === 'ONLINE'} onChange={e => setDocMode(e.target.value)} style={{width: '18px', height: '18px', accentColor: '#3b82f6'}} />
+                      Online (Teleconsultation)
+                    </label>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '15px', fontWeight: 500, color: docMode === 'OFFLINE' ? '#ea580c' : '#64748b'}}>
+                      <input type="radio" name="docMode" value="OFFLINE" checked={docMode === 'OFFLINE'} onChange={e => setDocMode(e.target.value)} style={{width: '18px', height: '18px', accentColor: '#ea580c'}} />
+                      Offline (In-Clinic)
+                    </label>
+                  </div>
                 </div>
                 {docMode === 'ONLINE' && (
                   <div className="form-group">
