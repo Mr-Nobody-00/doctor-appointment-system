@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Flow Guide — Every Endpoint Explained</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Poppins',sans-serif;background:#0a0e1a;color:#cbd5e1;line-height:1.8;font-size:15px}
+
+    .sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:#0f1423;border-right:1px solid rgba(255,255,255,0.06);overflow-y:auto;padding:20px 0;z-index:100}
+    .sidebar h2{font-size:15px;color:#60a5fa;padding:0 20px;margin-bottom:16px;font-weight:800}
+    .sidebar-group{margin-bottom:12px}
+    .sidebar-group-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#475569;padding:6px 20px}
+    .sidebar a{display:block;padding:6px 20px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;border-left:3px solid transparent}
+    .sidebar a:hover{color:#e2e8f0;background:rgba(96,165,250,0.06);border-left-color:#3b82f6}
+
+    .main{margin-left:260px;padding:40px 48px;max-width:1050px}
+
+    h1{font-size:34px;font-weight:800;color:white;margin-bottom:6px;letter-spacing:-1px}
+    .sub{color:#64748b;font-size:16px;margin-bottom:48px}
+
+    .section{margin-bottom:64px;scroll-margin-top:24px}
+    .section-title{font-size:26px;font-weight:800;color:white;margin-bottom:24px;padding-bottom:12px;border-bottom:2px solid rgba(96,165,250,0.2)}
+
+    .endpoint-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:18px;padding:32px;margin-bottom:28px;transition:all 0.3s}
+    .endpoint-card:hover{border-color:rgba(96,165,250,0.2)}
+
+    .ep-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+    .method-badge{padding:6px 16px;border-radius:8px;font-size:13px;font-weight:800;font-family:'Fira Code',monospace;letter-spacing:0.5px}
+    .method-badge.get{background:rgba(74,222,128,0.15);color:#4ade80}
+    .method-badge.post{background:rgba(96,165,250,0.15);color:#60a5fa}
+    .method-badge.put{background:rgba(250,204,21,0.15);color:#facc15}
+    .ep-url{font-family:'Fira Code',monospace;font-size:16px;color:#e2e8f0;font-weight:600}
+    .ep-desc{color:#94a3b8;font-size:15px;margin-bottom:20px}
+    .ep-who{display:inline-block;padding:4px 14px;border-radius:50px;font-size:12px;font-weight:700;margin-bottom:16px}
+    .ep-who.public{background:rgba(74,222,128,0.12);color:#4ade80}
+    .ep-who.patient{background:rgba(96,165,250,0.12);color:#60a5fa}
+    .ep-who.admin{background:rgba(250,204,21,0.12);color:#facc15}
+
+    .flow-title{font-size:16px;font-weight:800;color:#60a5fa;margin:20px 0 12px;letter-spacing:0.3px}
+
+    .flow-box{background:#0f1423;border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin-bottom:20px}
+    .flow-step{display:flex;gap:16px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:flex-start}
+    .flow-step:last-child{border-bottom:none}
+    .flow-num{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;flex-shrink:0}
+    .flow-num.blue{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+    .flow-num.green{background:linear-gradient(135deg,#22c55e,#16a34a)}
+    .flow-num.purple{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+    .flow-num.orange{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .flow-num.red{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    .flow-num.cyan{background:linear-gradient(135deg,#06b6d4,#0891b2)}
+    .flow-text h4{font-size:15px;color:#e2e8f0;font-weight:700;margin-bottom:2px}
+    .flow-text p{font-size:14px;color:#94a3b8}
+    .flow-text code{background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-family:'Fira Code',monospace;font-size:13px;color:#fbbf24}
+    .flow-text .file{color:#60a5fa;font-weight:600}
+    .flow-text .arrow{color:#4ade80;font-weight:700}
+
+    .json-box{background:#141928;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin:12px 0;font-family:'Fira Code',monospace;font-size:13px;line-height:1.8;color:#e2e8f0;overflow-x:auto}
+    .json-box .key{color:#60a5fa}
+    .json-box .val{color:#4ade80}
+    .json-box .comment{color:#64748b}
+
+    .summary-box{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(139,92,246,0.08));border:1px solid rgba(96,165,250,0.15);border-radius:14px;padding:24px;margin:20px 0}
+    .summary-box h4{color:#60a5fa;font-size:16px;margin-bottom:8px}
+    .summary-box p{color:#94a3b8;font-size:14px}
+
+    .big-flow{background:#0f1423;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px;margin:20px 0;font-family:'Fira Code',monospace;font-size:14px;line-height:2.2;color:#94a3b8;overflow-x:auto;white-space:pre}
+    .big-flow .h{color:#60a5fa;font-weight:700}
+    .big-flow .g{color:#4ade80;font-weight:600}
+    .big-flow .y{color:#fbbf24;font-weight:600}
+    .big-flow .r{color:#f87171;font-weight:600}
+    .big-flow .p{color:#c084fc;font-weight:600}
+
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,0.2),transparent);margin:48px 0}
+
+    @media(max-width:768px){
+      .sidebar{display:none}
+      .main{margin-left:0;padding:24px 16px}
+      h1{font-size:26px}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>Flow Guide</h2>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Basics</div>
+    <a href="#how-it-works">How a Request Works</a>
+    <a href="#file-order">File Execution Order</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Auth Endpoints</div>
+    <a href="#register">POST /register</a>
+    <a href="#login">POST /login</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Specialty Endpoints</div>
+    <a href="#get-specialties">GET /specialties</a>
+    <a href="#post-specialty">POST /specialties</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Doctor Endpoints</div>
+    <a href="#get-doctors">GET /doctors</a>
+    <a href="#get-doctors-all">GET /doctors/all</a>
+    <a href="#post-doctor">POST /doctors</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Slot Endpoints</div>
+    <a href="#get-slots">GET /slots</a>
+    <a href="#post-slot">POST /slots</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Appointment Endpoints</div>
+    <a href="#post-appointment">POST /appointments</a>
+    <a href="#get-my">GET /appointments/my</a>
+    <a href="#get-all">GET /appointments/all</a>
+    <a href="#get-summary">GET /appointments/summary</a>
+    <a href="#put-cancel">PUT /cancel</a>
+    <a href="#put-status">PUT /status</a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Full Flows</div>
+    <a href="#patient-flow">Patient Journey</a>
+    <a href="#admin-flow">Admin Journey</a>
+  </div>
+</nav>
+
+<div class="main">
+  <h1>Complete Endpoint & Flow Guide</h1>
+  <p class="sub">Every endpoint explained — what calls what, in what order, and what happens at each step.</p>
+
+  <!-- ================================================ -->
+  <!-- HOW A REQUEST WORKS -->
+  <!-- ================================================ -->
+  <div class="section" id="how-it-works">
+    <div class="section-title">How Every Request Works (The Chain)</div>
+
+    <p style="color:#94a3b8;margin-bottom:20px">Every single HTTP request from React to Spring Boot goes through the same chain of files in this exact order:</p>
+
+    <div class="big-flow"><span class="h">React (Browser)</span>
+  User clicks a button or page loads
+  ↓
+  Axios sends HTTP request to http://localhost:8080/api/...
+  Token is attached in header: Authorization: Bearer eyJhbGci...
+  ↓
+<span class="y">WebConfig.java</span> — CORS Filter (Step 1)
+  Checks: "Is this request from localhost:5173?"
+  YES → Allow it through
+  NO → Block it (CORS error)
+  ↓
+<span class="r">JwtFilter.java</span> — Security Guard (Step 2)
+  Checks: "Is this URL public? (/api/auth/**)"
+  YES → Skip token check, go straight to controller
+  NO → Read Authorization header → Extract token
+       → Call JwtUtil.isValid(token)
+       → VALID? → Set user in security context → continue
+       → INVALID? → Return 403 Forbidden (BLOCKED)
+  ↓
+<span class="g">Controller</span> — Business Logic (Step 3)
+  The right controller method is called based on URL + HTTP method
+  Example: POST /api/appointments → AppointmentController.book()
+  ↓
+<span class="p">Repository</span> — Database Access (Step 4)
+  Controller calls repository methods like findById(), save()
+  Spring Data JPA generates SQL from the method name
+  ↓
+<span class="h">Hibernate ORM</span> — SQL Generator (Step 5)
+  Converts repository calls to actual SQL
+  findByEmail("john@email.com") → SELECT * FROM users WHERE email = 'john@email.com'
+  save(user) → INSERT INTO users (name, email, ...) VALUES ('John', 'john@email.com', ...)
+  ↓
+<span class="y">H2 Database</span> — Data Storage (Step 6)
+  Executes the SQL query
+  Returns the result data
+  ↓
+<span class="g">Back to Controller</span> (Step 7)
+  Controller receives Java objects from repository
+  Spring automatically converts Java objects to JSON
+  ↓
+<span class="h">Back to React</span> (Step 8)
+  Axios receives JSON response in .then(res => ...)
+  React updates the UI with the new data</div>
+
+    <div class="summary-box">
+      <h4>Remember this order for EVERY request:</h4>
+      <p>React → CORS (WebConfig) → JWT Filter → Controller → Repository → Hibernate → H2 Database → back up the chain → JSON response → React</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- FILE ORDER -->
+  <!-- ================================================ -->
+  <div class="section" id="file-order">
+    <div class="section-title">What Happens When the Server Starts</div>
+
+    <div class="flow-box">
+      <div class="flow-step">
+        <div class="flow-num blue">1</div>
+        <div class="flow-text">
+          <h4>You run: mvnw spring-boot:run</h4>
+          <p>Maven reads <span class="file">pom.xml</span>, downloads all dependencies (Spring, H2, JWT library, etc), and compiles all Java files.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num green">2</div>
+        <div class="flow-text">
+          <h4>DemoApplication.java runs</h4>
+          <p><code>@SpringBootApplication</code> tells Spring to scan ALL files in com.example.demo and its subpackages. It finds all @Entity, @Repository, @Controller, @Configuration, @Component classes.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num purple">3</div>
+        <div class="flow-text">
+          <h4>Spring reads application.properties</h4>
+          <p>Connects to H2 in-memory database. Sets <code>ddl-auto=update</code> which means Hibernate will auto-create tables.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num orange">4</div>
+        <div class="flow-text">
+          <h4>Hibernate scans @Entity classes</h4>
+          <p>Reads User.java, Specialty.java, Doctor.java, Slot.java, Appointment.java. Creates the database tables: USERS, SPECIALTY, DOCTOR, SLOT, APPOINTMENT with all columns and foreign keys.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num red">5</div>
+        <div class="flow-text">
+          <h4>Spring registers security</h4>
+          <p><span class="file">SecurityConfig.java</span> sets up the rules. <span class="file">WebConfig.java</span> sets up CORS. <span class="file">JwtFilter.java</span> is added to the filter chain.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num cyan">6</div>
+        <div class="flow-text">
+          <h4>DataSeeder.java runs (CommandLineRunner)</h4>
+          <p>Checks if admin@demo.com exists. If not, creates the Admin user in the database. Prints "Admin user created!"</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num blue">7</div>
+        <div class="flow-text">
+          <h4>Tomcat starts on port 8080</h4>
+          <p>Server is ready! "Started DemoApplication in X seconds" appears. Now it listens for HTTP requests.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- AUTH - REGISTER -->
+  <!-- ================================================ -->
+  <div class="section" id="register">
+    <div class="section-title">Authentication Endpoints</div>
+
+    <div class="endpoint-card">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/auth/register</span>
+      </div>
+      <div class="ep-desc">Create a new patient account</div>
+      <span class="ep-who public">PUBLIC — No token needed</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box"><span class="comment">// User fills the Register form and clicks "Register"</span>
+<span class="comment">// Register.jsx calls:</span>
+axios.post(<span class="val">'http://localhost:8080/api/auth/register'</span>, {
+  <span class="key">"name"</span>: <span class="val">"John Doe"</span>,
+  <span class="key">"email"</span>: <span class="val">"john@email.com"</span>,
+  <span class="key">"password"</span>: <span class="val">"mypassword"</span>
+})</div>
+
+      <div class="flow-title">Step-by-Step Flow (which file does what):</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Register.jsx (Frontend)</h4>
+            <p>User types name, email, password. Clicks Register button. <code>axios.post()</code> sends JSON to backend.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">2</div>
+          <div class="flow-text">
+            <h4>WebConfig.java (CORS Check)</h4>
+            <p>Request comes from localhost:5173. CORS config says "allow it". <span class="arrow">→ PASS</span></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num orange">3</div>
+          <div class="flow-text">
+            <h4>JwtFilter.java (Security Check)</h4>
+            <p>URL is <code>/api/auth/register</code>. SecurityConfig says <code>/api/auth/**</code> is permitAll(). <span class="arrow">→ SKIP token check, allow through</span></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">4</div>
+          <div class="flow-text">
+            <h4>AuthController.java → register() method</h4>
+            <p>Spring sees POST + /api/auth/register → calls <code>register(@RequestBody User user)</code>. Spring auto-converts the JSON body into a User Java object. Then sets <code>user.setRole("PATIENT")</code> — you can ONLY register as a patient, never as admin.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num cyan">5</div>
+          <div class="flow-text">
+            <h4>UserRepository.save(user)</h4>
+            <p>Controller calls <code>userRepository.save(user)</code>. Spring Data JPA passes this to Hibernate.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">6</div>
+          <div class="flow-text">
+            <h4>Hibernate → H2 Database</h4>
+            <p>Hibernate generates: <code>INSERT INTO users (name, email, password, role) VALUES ('John Doe', 'john@email.com', 'mypassword', 'PATIENT')</code>. H2 executes it. User is saved with auto-generated id.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num blue">7</div>
+          <div class="flow-text">
+            <h4>Response back to React</h4>
+            <p>Controller returns the saved User object. Spring converts it to JSON. Register.jsx receives it in <code>.then()</code>, shows "Registered!" message, and redirects to login page after 2 seconds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">{
+  <span class="key">"id"</span>: <span class="val">2</span>,
+  <span class="key">"name"</span>: <span class="val">"John Doe"</span>,
+  <span class="key">"email"</span>: <span class="val">"john@email.com"</span>,
+  <span class="key">"password"</span>: <span class="val">"mypassword"</span>,
+  <span class="key">"role"</span>: <span class="val">"PATIENT"</span>
+}</div>
+    </div>
+
+    <!-- AUTH - LOGIN -->
+    <div class="endpoint-card" id="login">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/auth/login</span>
+      </div>
+      <div class="ep-desc">Authenticate user and get JWT token</div>
+      <span class="ep-who public">PUBLIC — No token needed</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box"><span class="comment">// User fills email and password on Login page, clicks "Sign In"</span>
+<span class="comment">// Login.jsx calls:</span>
+axios.post(<span class="val">'http://localhost:8080/api/auth/login'</span>, {
+  <span class="key">"email"</span>: <span class="val">"john@email.com"</span>,
+  <span class="key">"password"</span>: <span class="val">"mypassword"</span>
+})</div>
+
+      <div class="flow-title">Step-by-Step Flow:</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Login.jsx (Frontend)</h4>
+            <p>User enters email + password. Clicks Sign In. Axios sends POST request.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">2</div>
+          <div class="flow-text">
+            <h4>CORS + JWT Filter</h4>
+            <p>CORS allows it. JWT Filter sees /api/auth/** → public route → skip token check. <span class="arrow">→ PASS</span></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">3</div>
+          <div class="flow-text">
+            <h4>AuthController.java → login() method</h4>
+            <p>Reads email and password from request body. Calls <code>userRepository.findByEmail(email)</code> to find the user in the database.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num orange">4</div>
+          <div class="flow-text">
+            <h4>Password Check</h4>
+            <p>Compares the password from the request with the password stored in the database. If they don't match → throws "Invalid credentials" error.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num cyan">5</div>
+          <div class="flow-text">
+            <h4>JwtUtil.java → generateToken()</h4>
+            <p>If password matches, calls <code>JwtUtil.generateToken(email, role)</code>. This creates a signed JWT token containing the user's email and role, with 24-hour expiry.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num blue">6</div>
+          <div class="flow-text">
+            <h4>Response back to React</h4>
+            <p>Returns JSON with token, role, and name. Login.jsx stores them in <code>localStorage</code> and redirects — ADMIN goes to /admin, PATIENT goes to /dashboard.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">{
+  <span class="key">"token"</span>: <span class="val">"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huQGVtYWlsLmNvbSIs..."</span>,
+  <span class="key">"role"</span>: <span class="val">"PATIENT"</span>,
+  <span class="key">"name"</span>: <span class="val">"John Doe"</span>
+}</div>
+
+      <div class="flow-title">What Login.jsx does with the response:</div>
+      <div class="json-box"><span class="comment">// Store everything in browser's localStorage</span>
+localStorage.setItem(<span class="val">'token'</span>, res.data.token)   <span class="comment">// JWT token</span>
+localStorage.setItem(<span class="val">'role'</span>, res.data.role)     <span class="comment">// "PATIENT" or "ADMIN"</span>
+localStorage.setItem(<span class="val">'name'</span>, res.data.name)     <span class="comment">// "John Doe"</span>
+localStorage.setItem(<span class="val">'email'</span>, email)            <span class="comment">// "john@email.com"</span>
+
+<span class="comment">// Redirect based on role</span>
+if (role === <span class="val">'ADMIN'</span>) navigate(<span class="val">'/admin'</span>)
+else navigate(<span class="val">'/dashboard'</span>)</div>
+
+      <div class="summary-box">
+        <h4>Why is this important?</h4>
+        <p>After this point, EVERY future API call from React will include the token:<br>
+        <code>headers: { Authorization: "Bearer eyJhbGci..." }</code><br>
+        Without this token, the backend returns 403 Forbidden.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- SPECIALTIES -->
+  <!-- ================================================ -->
+  <div class="section" id="get-specialties">
+    <div class="section-title">Specialty Endpoints</div>
+
+    <div class="endpoint-card">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/specialties</span>
+      </div>
+      <div class="ep-desc">Get the list of all medical specialties</div>
+      <span class="ep-who patient">AUTHENTICATED — Token required</span>
+
+      <div class="flow-title">Step-by-Step Flow:</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Dashboard.jsx or AdminDashboard.jsx</h4>
+            <p>Page loads → <code>useEffect</code> runs → calls <code>fetchSpecialties()</code> → <code>axios.get('/api/specialties', { headers })</code> with JWT token in header.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">2</div>
+          <div class="flow-text">
+            <h4>JwtFilter.java</h4>
+            <p>Reads "Bearer eyJhbGci..." from header → calls <code>JwtUtil.isValid(token)</code> → token is valid → <span class="arrow">PASS</span></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">3</div>
+          <div class="flow-text">
+            <h4>SpecialtyController.java → getAll()</h4>
+            <p>Calls <code>specialtyRepository.findAll()</code> → Hibernate generates <code>SELECT * FROM specialty</code> → returns list of all specialties.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">[
+  { <span class="key">"id"</span>: <span class="val">1</span>, <span class="key">"name"</span>: <span class="val">"Cardiology"</span> },
+  { <span class="key">"id"</span>: <span class="val">2</span>, <span class="key">"name"</span>: <span class="val">"Dermatology"</span> },
+  { <span class="key">"id"</span>: <span class="val">3</span>, <span class="key">"name"</span>: <span class="val">"Pediatrics"</span> }
+]</div>
+    </div>
+
+    <div class="endpoint-card" id="post-specialty">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/specialties</span>
+      </div>
+      <div class="ep-desc">Add a new specialty (Admin only)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box">axios.post(<span class="val">'/api/specialties'</span>, { <span class="key">"name"</span>: <span class="val">"Cardiology"</span> }, { headers })</div>
+
+      <div class="flow-title">Flow:</div>
+      <p style="color:#94a3b8">AdminDashboard.jsx → JwtFilter (validates token) → SpecialtyController.create() → <code>specialtyRepository.save(specialty)</code> → Hibernate: <code>INSERT INTO specialty (name) VALUES ('Cardiology')</code> → Returns the saved specialty with auto-generated id.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- DOCTORS -->
+  <!-- ================================================ -->
+  <div class="section" id="get-doctors">
+    <div class="section-title">Doctor Endpoints</div>
+
+    <div class="endpoint-card">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/doctors?specialtyId=1&mode=ONLINE</span>
+      </div>
+      <div class="ep-desc">Get doctors filtered by specialty and mode</div>
+      <span class="ep-who patient">PATIENT — Token required</span>
+
+      <div class="flow-title">Step-by-Step Flow:</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Dashboard.jsx</h4>
+            <p>Patient selects "Cardiology" from dropdown + "ONLINE" mode → calls <code>fetchDoctors(1, 'ONLINE')</code> → Axios sends GET with query parameters.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">2</div>
+          <div class="flow-text">
+            <h4>JwtFilter.java → validates token → PASS</h4>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">3</div>
+          <div class="flow-text">
+            <h4>DoctorController.java → getBySpecialtyAndMode()</h4>
+            <p><code>@RequestParam Long specialtyId</code> reads "1" from the URL. <code>@RequestParam String mode</code> reads "ONLINE".</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">4</div>
+          <div class="flow-text">
+            <h4>DoctorRepository.findBySpecialtyIdAndMode(1, "ONLINE")</h4>
+            <p>Spring auto-generates: <code>SELECT * FROM doctor WHERE specialty_id = 1 AND mode = 'ONLINE'</code>. Returns only online cardiology doctors.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">[
+  {
+    <span class="key">"id"</span>: <span class="val">1</span>,
+    <span class="key">"name"</span>: <span class="val">"Dr. Sharma"</span>,
+    <span class="key">"mode"</span>: <span class="val">"ONLINE"</span>,
+    <span class="key">"videoLink"</span>: <span class="val">"https://meet.google.com/abc"</span>,
+    <span class="key">"clinicAddress"</span>: <span class="val">null</span>,
+    <span class="key">"specialty"</span>: { <span class="key">"id"</span>: <span class="val">1</span>, <span class="key">"name"</span>: <span class="val">"Cardiology"</span> }
+  }
+]</div>
+    </div>
+
+    <div class="endpoint-card" id="get-doctors-all">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/doctors/all</span>
+      </div>
+      <div class="ep-desc">Get ALL doctors (Admin panel needs this)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+      <p style="color:#94a3b8;margin-top:12px">AdminDashboard.jsx loads this on page load. Calls <code>doctorRepository.findAll()</code> → returns every doctor regardless of mode or specialty.</p>
+    </div>
+
+    <div class="endpoint-card" id="post-doctor">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/doctors</span>
+      </div>
+      <div class="ep-desc">Register a new doctor (Admin only)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box">axios.post(<span class="val">'/api/doctors'</span>, {
+  <span class="key">"name"</span>: <span class="val">"Dr. Sharma"</span>,
+  <span class="key">"specialtyId"</span>: <span class="val">"1"</span>,
+  <span class="key">"mode"</span>: <span class="val">"ONLINE"</span>,
+  <span class="key">"videoLink"</span>: <span class="val">"https://meet.google.com/abc"</span>,
+  <span class="key">"clinicAddress"</span>: <span class="val">""</span>
+}, { headers })</div>
+
+      <div class="flow-title">Flow:</div>
+      <p style="color:#94a3b8">DoctorController.create() → reads all fields from body → calls <code>specialtyRepository.findById(1)</code> to get the Specialty object → sets <code>doctor.setSpecialty(specialty)</code> → calls <code>doctorRepository.save(doctor)</code> → Hibernate: INSERT INTO doctor with specialty_id = 1.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- SLOTS -->
+  <!-- ================================================ -->
+  <div class="section" id="get-slots">
+    <div class="section-title">Slot Endpoints</div>
+
+    <div class="endpoint-card">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/slots?doctorId=1&date=2026-03-30</span>
+      </div>
+      <div class="ep-desc">Get available (unbooked) time slots for a doctor on a date</div>
+      <span class="ep-who patient">PATIENT — Token required</span>
+
+      <div class="flow-title">Step-by-Step Flow:</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Dashboard.jsx</h4>
+            <p>Patient clicked Dr. Sharma, then picked date 2026-03-30 from the date picker → calls <code>fetchSlots(1, '2026-03-30')</code>.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">2</div>
+          <div class="flow-text">
+            <h4>SlotController.java → getAvailableSlots()</h4>
+            <p>Calls <code>slotRepository.findByDoctorIdAndDateAndIsBooked(1, "2026-03-30", false)</code></p>
+            <p>The <strong>false</strong> is the key — it means "only give me slots where isBooked = false" = available slots only!</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">3</div>
+          <div class="flow-text">
+            <h4>Hibernate generates SQL</h4>
+            <p><code>SELECT * FROM slot WHERE doctor_id = 1 AND date = '2026-03-30' AND is_booked = false</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">[
+  { <span class="key">"id"</span>: <span class="val">1</span>, <span class="key">"date"</span>: <span class="val">"2026-03-30"</span>, <span class="key">"startTime"</span>: <span class="val">"10:00"</span>, <span class="key">"endTime"</span>: <span class="val">"10:30"</span>, <span class="key">"isBooked"</span>: <span class="val">false</span> },
+  { <span class="key">"id"</span>: <span class="val">2</span>, <span class="key">"date"</span>: <span class="val">"2026-03-30"</span>, <span class="key">"startTime"</span>: <span class="val">"11:00"</span>, <span class="key">"endTime"</span>: <span class="val">"11:30"</span>, <span class="key">"isBooked"</span>: <span class="val">false</span> }
+]
+<span class="comment">// Booked slots are NOT returned — only available ones</span></div>
+    </div>
+
+    <div class="endpoint-card" id="post-slot">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/slots</span>
+      </div>
+      <div class="ep-desc">Create a new time slot for a doctor (Admin only)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box">axios.post(<span class="val">'/api/slots'</span>, {
+  <span class="key">"doctorId"</span>: <span class="val">"1"</span>,
+  <span class="key">"date"</span>: <span class="val">"2026-03-30"</span>,
+  <span class="key">"startTime"</span>: <span class="val">"10:00"</span>,
+  <span class="key">"endTime"</span>: <span class="val">"10:30"</span>
+}, { headers })</div>
+      <p style="color:#94a3b8;margin-top:12px">SlotController.create() → sets <code>isBooked = false</code> (new slot is always available) → links to doctor → saves to database.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- APPOINTMENTS -->
+  <!-- ================================================ -->
+  <div class="section" id="post-appointment">
+    <div class="section-title">Appointment Endpoints (Most Important!)</div>
+
+    <div class="endpoint-card">
+      <div class="ep-header">
+        <span class="method-badge post">POST</span>
+        <span class="ep-url">/api/appointments</span>
+      </div>
+      <div class="ep-desc">Book an appointment — the core feature with double-booking prevention</div>
+      <span class="ep-who patient">PATIENT — Token required</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box"><span class="comment">// Patient clicks "Book" on the 10:00-10:30 slot</span>
+axios.post(<span class="val">'/api/appointments'</span>, {
+  <span class="key">"slotId"</span>: <span class="val">"1"</span>,
+  <span class="key">"patientEmail"</span>: <span class="val">"john@email.com"</span>
+}, { headers })</div>
+
+      <div class="flow-title">Step-by-Step Flow (this is the most important flow!):</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Dashboard.jsx → bookAppointment(slotId)</h4>
+            <p>Patient clicks "Book" button on a slot card. React sends POST with slotId and the patient's email (from localStorage).</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">2</div>
+          <div class="flow-text">
+            <h4>JwtFilter.java → validates token → PASS</h4>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">3</div>
+          <div class="flow-text">
+            <h4>AppointmentController.java → book() method</h4>
+            <p>Reads slotId from request body. Calls <code>slotRepository.findById(1)</code> to get the slot from database.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">4</div>
+          <div class="flow-text">
+            <h4>DOUBLE BOOKING CHECK (Critical!)</h4>
+            <p>Checks <code>if (slot.getIsBooked()) → throw "Slot already booked"</code>. If another patient already booked this slot, the request is REJECTED. This prevents two patients from booking the same time.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num orange">5</div>
+          <div class="flow-text">
+            <h4>LOCK THE SLOT</h4>
+            <p>Sets <code>slot.setIsBooked(true)</code> and saves it. Now this slot is marked as taken — no one else can book it. This is the "slot locking" the use case requires.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">6</div>
+          <div class="flow-text">
+            <h4>Find the patient</h4>
+            <p>Calls <code>userRepository.findByEmail("john@email.com")</code> to get the User object.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num cyan">7</div>
+          <div class="flow-text">
+            <h4>Create the Appointment</h4>
+            <p>Creates new Appointment object. Sets patient, doctor (from slot.getDoctor()), slot, status = "CONFIRMED", bookingDate = today. Saves to database.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num blue">8</div>
+          <div class="flow-text">
+            <h4>Response back to React</h4>
+            <p>Returns the full Appointment with all details. Dashboard shows "Appointment booked!" alert and refreshes the slot list (the booked slot disappears).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">{
+  <span class="key">"id"</span>: <span class="val">1</span>,
+  <span class="key">"status"</span>: <span class="val">"CONFIRMED"</span>,
+  <span class="key">"bookingDate"</span>: <span class="val">"2026-03-30"</span>,
+  <span class="key">"patient"</span>: { <span class="key">"id"</span>: <span class="val">2</span>, <span class="key">"name"</span>: <span class="val">"John Doe"</span> },
+  <span class="key">"doctor"</span>: { <span class="key">"id"</span>: <span class="val">1</span>, <span class="key">"name"</span>: <span class="val">"Dr. Sharma"</span>, <span class="key">"mode"</span>: <span class="val">"ONLINE"</span>, <span class="key">"videoLink"</span>: <span class="val">"https://meet.google.com/abc"</span> },
+  <span class="key">"slot"</span>: { <span class="key">"id"</span>: <span class="val">1</span>, <span class="key">"date"</span>: <span class="val">"2026-03-30"</span>, <span class="key">"startTime"</span>: <span class="val">"10:00"</span>, <span class="key">"endTime"</span>: <span class="val">"10:30"</span>, <span class="key">"isBooked"</span>: <span class="val">true</span> }
+}</div>
+    </div>
+
+    <!-- GET MY APPOINTMENTS -->
+    <div class="endpoint-card" id="get-my">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/appointments/my?email=john@email.com</span>
+      </div>
+      <div class="ep-desc">Get all appointments for the logged-in patient</div>
+      <span class="ep-who patient">PATIENT — Token required</span>
+      <p style="color:#94a3b8;margin-top:12px">Dashboard.jsx "My Appointments" tab → calls this → <code>userRepository.findByEmail(email)</code> → <code>appointmentRepository.findByPatientId(patient.getId())</code> → returns all appointments for that patient with doctor, slot, and status info.</p>
+    </div>
+
+    <!-- GET ALL APPOINTMENTS -->
+    <div class="endpoint-card" id="get-all">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/appointments/all?date=2026-03-30</span>
+      </div>
+      <div class="ep-desc">Get all appointments for a specific date (Admin view)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+      <p style="color:#94a3b8;margin-top:12px">AdminDashboard.jsx "Appointments" tab → admin picks a date → calls <code>appointmentRepository.findByBookingDate(date)</code> → returns ALL appointments for that day from ALL patients.</p>
+    </div>
+
+    <!-- GET SUMMARY -->
+    <div class="endpoint-card" id="get-summary">
+      <div class="ep-header">
+        <span class="method-badge get">GET</span>
+        <span class="ep-url">/api/appointments/summary?date=2026-03-30</span>
+      </div>
+      <div class="ep-desc">Get daily summary statistics grouped by mode, specialty, and status</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+
+      <div class="flow-title">Flow:</div>
+      <p style="color:#94a3b8;margin-bottom:12px">Gets all appointments for the date, then uses <strong>Java Streams</strong> with <code>Collectors.groupingBy()</code> to group them — like SQL's GROUP BY but in Java.</p>
+
+      <div class="flow-title">What React Receives:</div>
+      <div class="json-box">{
+  <span class="key">"total"</span>: <span class="val">8</span>,
+  <span class="key">"byMode"</span>: { <span class="key">"ONLINE"</span>: <span class="val">5</span>, <span class="key">"OFFLINE"</span>: <span class="val">3</span> },
+  <span class="key">"bySpecialty"</span>: { <span class="key">"Cardiology"</span>: <span class="val">4</span>, <span class="key">"Dermatology"</span>: <span class="val">2</span>, <span class="key">"Pediatrics"</span>: <span class="val">2</span> },
+  <span class="key">"byStatus"</span>: { <span class="key">"CONFIRMED"</span>: <span class="val">5</span>, <span class="key">"COMPLETED"</span>: <span class="val">2</span>, <span class="key">"CANCELLED"</span>: <span class="val">1</span> }
+}</div>
+      <p style="color:#94a3b8;margin-top:12px">AdminDashboard.jsx displays this as stat cards — total appointments, count by online/offline, count by specialty, count by status.</p>
+    </div>
+
+    <!-- CANCEL -->
+    <div class="endpoint-card" id="put-cancel">
+      <div class="ep-header">
+        <span class="method-badge put">PUT</span>
+        <span class="ep-url">/api/appointments/5/cancel</span>
+      </div>
+      <div class="ep-desc">Cancel an appointment — frees the slot for others</div>
+      <span class="ep-who patient">PATIENT — Token required</span>
+
+      <div class="flow-title">Step-by-Step Flow:</div>
+      <div class="flow-box">
+        <div class="flow-step">
+          <div class="flow-num blue">1</div>
+          <div class="flow-text">
+            <h4>Dashboard.jsx</h4>
+            <p>Patient clicks "Cancel" button on their appointment → calls <code>axios.put('/api/appointments/5/cancel')</code></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num green">2</div>
+          <div class="flow-text">
+            <h4>AppointmentController.cancel(5)</h4>
+            <p><code>@PathVariable Long id</code> reads "5" from the URL. Finds the appointment with id 5.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num orange">3</div>
+          <div class="flow-text">
+            <h4>Set status to CANCELLED</h4>
+            <p><code>appointment.setStatus("CANCELLED")</code></p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num red">4</div>
+          <div class="flow-text">
+            <h4>FREE THE SLOT (Very important!)</h4>
+            <p><code>slot.setIsBooked(false)</code> → saves the slot. Now this time slot is available again for other patients to book!</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num purple">5</div>
+          <div class="flow-text">
+            <h4>Save and respond</h4>
+            <p>Saves the updated appointment. React refreshes the list — status changes from "CONFIRMED" to "CANCELLED".</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPDATE STATUS -->
+    <div class="endpoint-card" id="put-status">
+      <div class="ep-header">
+        <span class="method-badge put">PUT</span>
+        <span class="ep-url">/api/appointments/5/status</span>
+      </div>
+      <div class="ep-desc">Mark appointment as COMPLETED or NO_SHOW (Admin only)</div>
+      <span class="ep-who admin">ADMIN — Token required</span>
+
+      <div class="flow-title">What React Sends:</div>
+      <div class="json-box"><span class="comment">// Admin clicks "Complete" button</span>
+axios.put(<span class="val">'/api/appointments/5/status'</span>, { <span class="key">"status"</span>: <span class="val">"COMPLETED"</span> }, { headers })
+
+<span class="comment">// OR Admin clicks "No Show" button</span>
+axios.put(<span class="val">'/api/appointments/5/status'</span>, { <span class="key">"status"</span>: <span class="val">"NO_SHOW"</span> }, { headers })</div>
+      <p style="color:#94a3b8;margin-top:12px">AppointmentController.updateStatus() → finds appointment by id → sets the new status → saves. This completes the appointment lifecycle: CONFIRMED → COMPLETED or NO_SHOW.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- FULL PATIENT JOURNEY -->
+  <!-- ================================================ -->
+  <div class="section" id="patient-flow">
+    <div class="section-title">Complete Patient Journey</div>
+
+    <div class="big-flow"><span class="h">1. REGISTER</span>
+   Open localhost:5173 → Click "Register here"
+   Fill name, email, password → Click Register
+   <span class="g">POST /api/auth/register</span> → account created with role PATIENT
+   Redirected to login page
+
+<span class="h">2. LOGIN</span>
+   Enter email + password → Click Sign In
+   <span class="g">POST /api/auth/login</span> → server validates → returns JWT token
+   Token stored in localStorage → Redirected to /dashboard
+
+<span class="h">3. SELECT MODE</span>
+   Dashboard loads → specialties fetched (<span class="g">GET /api/specialties</span>)
+   Click "Online" or "Offline" button
+
+<span class="h">4. SELECT SPECIALTY</span>
+   Choose "Cardiology" from dropdown
+   <span class="g">GET /api/doctors?specialtyId=1&mode=ONLINE</span>
+   Doctor cards appear
+
+<span class="h">5. SELECT DOCTOR</span>
+   Click on "Dr. Sharma" card → card gets highlighted
+
+<span class="h">6. SELECT DATE</span>
+   Pick date from date picker → 2026-03-30
+   <span class="g">GET /api/slots?doctorId=1&date=2026-03-30</span>
+   Available time slots appear
+
+<span class="h">7. BOOK</span>
+   Click "Book" on "10:00 - 10:30" slot
+   <span class="g">POST /api/appointments</span> { slotId: 1, patientEmail: "john@email.com" }
+   <span class="y">→ Slot locked (isBooked = true)</span>
+   <span class="y">→ Appointment created (status = CONFIRMED)</span>
+   Alert: "Appointment booked!" → Slot disappears from available list
+
+<span class="h">8. VIEW APPOINTMENTS</span>
+   Click "My Appointments" tab
+   <span class="g">GET /api/appointments/my?email=john@email.com</span>
+   Table shows: Dr. Sharma | Cardiology | 2026-03-30 | 10:00-10:30 | ONLINE | CONFIRMED
+
+<span class="h">9. CANCEL (optional)</span>
+   Click "Cancel" button on the appointment
+   <span class="r">PUT /api/appointments/1/cancel</span>
+   <span class="y">→ Status changes to CANCELLED</span>
+   <span class="y">→ Slot freed (isBooked = false) — available for others again</span></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================ -->
+  <!-- FULL ADMIN JOURNEY -->
+  <!-- ================================================ -->
+  <div class="section" id="admin-flow">
+    <div class="section-title">Complete Admin Journey</div>
+
+    <div class="big-flow"><span class="h">1. LOGIN</span>
+   Open localhost:5173 → Enter admin@demo.com / admin123
+   <span class="g">POST /api/auth/login</span> → JWT token with role ADMIN
+   Redirected to /admin panel
+
+<span class="h">2. ADD SPECIALTIES</span>
+   "Specialties" tab → Type "Cardiology" → Click "Add"
+   <span class="g">POST /api/specialties</span> { name: "Cardiology" }
+   Add more: Dermatology, Pediatrics, etc.
+   Tags appear showing all added specialties
+
+<span class="h">3. ADD DOCTORS</span>
+   "Doctors" tab → Fill form:
+     Name: Dr. Sharma | Specialty: Cardiology | Mode: Online | Video: https://meet.google.com/abc
+   <span class="g">POST /api/doctors</span>
+   Add more doctors with different specialties and modes
+   Table shows all registered doctors
+
+<span class="h">4. CREATE SLOTS</span>
+   "Time Slots" tab → Fill form:
+     Doctor: Dr. Sharma (ONLINE) | Date: 2026-03-30 | Start: 10:00 | End: 10:30
+   <span class="g">POST /api/slots</span>
+   Create multiple slots for each doctor
+   <span class="y">Each slot starts with isBooked = false</span>
+
+<span class="h">5. VIEW APPOINTMENTS & SUMMARY</span>
+   "Appointments & Summary" tab → Pick date: 2026-03-30
+   <span class="g">GET /api/appointments/all?date=2026-03-30</span> → All appointments for the day
+   <span class="g">GET /api/appointments/summary?date=2026-03-30</span> → Summary stats
+
+   Stat cards show: Total: 8 | ONLINE: 5 | OFFLINE: 3 | Cardiology: 4
+
+<span class="h">6. UPDATE STATUS</span>
+   See a confirmed appointment → Click "Complete"
+   <span class="g">PUT /api/appointments/1/status</span> { status: "COMPLETED" }
+   <span class="y">→ Status badge changes from CONFIRMED (blue) to COMPLETED (green)</span>
+
+   Patient didn't show up → Click "No Show"
+   <span class="r">PUT /api/appointments/2/status</span> { status: "NO_SHOW" }
+   <span class="y">→ Status badge changes to NO_SHOW (orange)</span></div>
+  </div>
+
+  <div style="text-align:center;padding:60px 0;color:#475569;border-top:1px solid rgba(255,255,255,0.06);margin-top:48px">
+    <p style="font-size:18px;font-weight:700;color:#94a3b8">Doctor Appointment System — Flow Guide</p>
+    <p style="font-size:13px;margin-top:8px">15 Endpoints | Every request traced from React to Database and back</p>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>File-by-File Code Explanation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Poppins',sans-serif;background:#0a0e1a;color:#cbd5e1;line-height:1.8;font-size:15px}
+
+    .sidebar{position:fixed;top:0;left:0;width:280px;height:100vh;background:#0f1423;border-right:1px solid rgba(255,255,255,0.06);overflow-y:auto;padding:20px 0;z-index:100}
+    .sidebar h2{font-size:16px;color:#60a5fa;padding:0 20px;margin-bottom:20px;font-weight:800}
+    .sidebar-group{margin-bottom:16px}
+    .sidebar-group-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#475569;padding:8px 20px}
+    .sidebar a{display:block;padding:7px 20px;color:#94a3b8;text-decoration:none;font-size:13px;font-weight:500;transition:all 0.2s;border-left:3px solid transparent}
+    .sidebar a:hover{color:#e2e8f0;background:rgba(96,165,250,0.06);border-left-color:#3b82f6}
+    .sidebar a .ftype{font-size:10px;opacity:0.5;margin-left:4px}
+
+    .main{margin-left:280px;padding:40px 48px;max-width:1000px}
+
+    .page-title{font-size:36px;font-weight:800;color:white;margin-bottom:8px;letter-spacing:-1px}
+    .page-sub{color:#64748b;font-size:16px;margin-bottom:48px}
+
+    .file-section{margin-bottom:56px;scroll-margin-top:20px}
+    .file-header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+    .file-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0}
+    .file-icon.java{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .file-icon.jsx{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+    .file-icon.config{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+    .file-icon.xml{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    .file-icon.props{background:linear-gradient(135deg,#10b981,#059669)}
+    .file-icon.css{background:linear-gradient(135deg,#ec4899,#db2777)}
+    .file-name{font-size:22px;font-weight:800;color:white}
+    .file-path{font-size:13px;color:#475569;font-family:'Fira Code',monospace;margin-bottom:16px;margin-left:56px}
+
+    .explain{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:14px;padding:22px 26px;margin-bottom:16px}
+    .explain p{color:#94a3b8;font-size:15px}
+    .explain strong{color:#60a5fa}
+
+    .code-box{background:#141928;border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin-bottom:16px}
+    .code-top{background:rgba(255,255,255,0.03);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .code-top span{font-size:12px;color:#64748b;font-family:'Fira Code',monospace}
+    .code-lang{font-size:11px;padding:3px 10px;border-radius:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+    .code-lang.java{background:rgba(245,158,11,0.15);color:#fbbf24}
+    .code-lang.jsx{background:rgba(59,130,246,0.15);color:#60a5fa}
+    .code-lang.xml{background:rgba(239,68,68,0.15);color:#f87171}
+    .code-lang.props{background:rgba(16,185,129,0.15);color:#34d399}
+    .code-lang.css{background:rgba(236,72,153,0.15);color:#f472b6}
+    pre{padding:20px;overflow-x:auto;font-family:'Fira Code',monospace;font-size:13px;line-height:1.9;color:#e2e8f0}
+
+    .line-explain{margin-bottom:16px}
+    .line-explain table{width:100%;border-collapse:collapse}
+    .line-explain th{background:rgba(96,165,250,0.1);padding:12px 16px;text-align:left;font-size:12px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:0.8px}
+    .line-explain td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:14px;vertical-align:top}
+    .line-explain td:first-child{font-family:'Fira Code',monospace;color:#fbbf24;white-space:nowrap;width:35%}
+    .line-explain td:last-child{color:#94a3b8}
+
+    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(96,165,250,0.2),transparent);margin:56px 0}
+
+    .tag{display:inline-block;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;margin-right:6px;margin-bottom:4px}
+    .tag.model{background:rgba(245,158,11,0.15);color:#fbbf24}
+    .tag.repo{background:rgba(139,92,246,0.15);color:#c084fc}
+    .tag.ctrl{background:rgba(16,185,129,0.15);color:#34d399}
+    .tag.sec{background:rgba(239,68,68,0.15);color:#f87171}
+    .tag.config{background:rgba(59,130,246,0.15);color:#60a5fa}
+    .tag.react{background:rgba(6,182,212,0.15);color:#22d3ee}
+
+    @media(max-width:900px){
+      .sidebar{display:none}
+      .main{margin-left:0;padding:24px 20px}
+      .page-title{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <h2>File Guide</h2>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Config</div>
+    <a href="#pom">pom.xml <span class="ftype">.xml</span></a>
+    <a href="#app-props">application.properties <span class="ftype">.props</span></a>
+    <a href="#demo-app">DemoApplication.java <span class="ftype">.java</span></a>
+    <a href="#webconfig">WebConfig.java <span class="ftype">.java</span></a>
+    <a href="#dataseeder">DataSeeder.java <span class="ftype">.java</span></a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Models</div>
+    <a href="#user">User.java <span class="ftype">.java</span></a>
+    <a href="#specialty">Specialty.java <span class="ftype">.java</span></a>
+    <a href="#doctor">Doctor.java <span class="ftype">.java</span></a>
+    <a href="#slot">Slot.java <span class="ftype">.java</span></a>
+    <a href="#appointment">Appointment.java <span class="ftype">.java</span></a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Repositories</div>
+    <a href="#user-repo">UserRepository <span class="ftype">.java</span></a>
+    <a href="#specialty-repo">SpecialtyRepository <span class="ftype">.java</span></a>
+    <a href="#doctor-repo">DoctorRepository <span class="ftype">.java</span></a>
+    <a href="#slot-repo">SlotRepository <span class="ftype">.java</span></a>
+    <a href="#appointment-repo">AppointmentRepository <span class="ftype">.java</span></a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Controllers</div>
+    <a href="#auth-ctrl">AuthController <span class="ftype">.java</span></a>
+    <a href="#specialty-ctrl">SpecialtyController <span class="ftype">.java</span></a>
+    <a href="#doctor-ctrl">DoctorController <span class="ftype">.java</span></a>
+    <a href="#slot-ctrl">SlotController <span class="ftype">.java</span></a>
+    <a href="#appointment-ctrl">AppointmentController <span class="ftype">.java</span></a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Security</div>
+    <a href="#jwtutil">JwtUtil.java <span class="ftype">.java</span></a>
+    <a href="#jwtfilter">JwtFilter.java <span class="ftype">.java</span></a>
+    <a href="#securityconfig">SecurityConfig.java <span class="ftype">.java</span></a>
+  </div>
+  <div class="sidebar-group">
+    <div class="sidebar-group-title">Frontend</div>
+    <a href="#main-jsx">main.jsx <span class="ftype">.jsx</span></a>
+    <a href="#app-jsx">App.jsx <span class="ftype">.jsx</span></a>
+    <a href="#login-jsx">Login.jsx <span class="ftype">.jsx</span></a>
+    <a href="#register-jsx">Register.jsx <span class="ftype">.jsx</span></a>
+    <a href="#dashboard-jsx">Dashboard.jsx <span class="ftype">.jsx</span></a>
+    <a href="#admin-jsx">AdminDashboard.jsx <span class="ftype">.jsx</span></a>
+  </div>
+</nav>
+
+<div class="main">
+  <h1 class="page-title">File-by-File Code Explanation</h1>
+  <p class="page-sub">Every file in the Doctor Appointment System explained with code and line-by-line breakdown.</p>
+
+  <!-- ============================================ -->
+  <!--  POM.XML  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="pom">
+    <div class="file-header">
+      <div class="file-icon xml">XML</div>
+      <div class="file-name">pom.xml</div>
+    </div>
+    <div class="file-path">demo/pom.xml</div>
+    <span class="tag config">Configuration</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Maven Project Object Model — the build configuration file. It defines project metadata, Java version, and all library dependencies. Maven reads this file to download libraries and build the project.</p>
+      <p><strong>Think of it as:</strong> A shopping list of all the libraries your project needs. Maven goes to the internet, downloads them, and makes them available in your code.</p>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Dependency</th><th>Why We Need It</th></tr>
+        <tr><td>spring-boot-starter-web</td><td>Gives us @RestController, @GetMapping, embedded Tomcat server — everything needed to create REST APIs</td></tr>
+        <tr><td>spring-boot-starter-data-jpa</td><td>Gives us @Entity, JpaRepository, Hibernate — everything needed to talk to the database without writing SQL</td></tr>
+        <tr><td>h2</td><td>The in-memory database itself. Runs inside the app, no external setup needed</td></tr>
+        <tr><td>lombok</td><td>Reduces boilerplate code (getters, setters, constructors can be auto-generated)</td></tr>
+        <tr><td>spring-boot-devtools</td><td>Auto-restarts the server when you change code. Saves you from manually restarting</td></tr>
+        <tr><td>spring-boot-starter-security</td><td>Provides security filters, authentication framework, password encoding utilities</td></tr>
+        <tr><td>jjwt-api + jjwt-impl + jjwt-jackson</td><td>The JWT library — creates tokens, signs them, parses them, validates them</td></tr>
+        <tr><td>spring-boot-starter-test</td><td>Testing framework (JUnit) — for writing unit tests</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  APPLICATION.PROPERTIES  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="app-props">
+    <div class="file-header">
+      <div class="file-icon props">CFG</div>
+      <div class="file-name">application.properties</div>
+    </div>
+    <div class="file-path">src/main/resources/application.properties</div>
+    <span class="tag config">Configuration</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Spring Boot's main configuration file. Every setting for the database, server, and JPA goes here. Spring reads this on startup.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>application.properties</span><span class="code-lang props">properties</span></div>
+<pre>spring.application.name=demo
+spring.h2.console.enabled=true
+spring.datasource.url=jdbc:h2:mem:hackathon
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+server.port=8080</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Property</th><th>Explanation</th></tr>
+        <tr><td>spring.application.name=demo</td><td>Names the application "demo" — appears in logs</td></tr>
+        <tr><td>spring.h2.console.enabled=true</td><td>Enables the H2 web console at /h2-console for debugging the database</td></tr>
+        <tr><td>spring.datasource.url=jdbc:h2:mem:hackathon</td><td>"mem" = in-memory database named "hackathon". Data lives in RAM only</td></tr>
+        <tr><td>spring.datasource.driver-class-name</td><td>Tells Spring to use the H2 database driver</td></tr>
+        <tr><td>spring.jpa.hibernate.ddl-auto=update</td><td>Hibernate automatically creates/updates tables from @Entity classes on startup</td></tr>
+        <tr><td>spring.jpa.show-sql=true</td><td>Prints generated SQL queries in the console — useful for debugging</td></tr>
+        <tr><td>server.port=8080</td><td>Tomcat server runs on port 8080</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  DEMO APPLICATION  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="demo-app">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">DemoApplication.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/DemoApplication.java</div>
+    <span class="tag config">Entry Point</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The main entry point of the entire application. This is where everything starts. <strong>@SpringBootApplication</strong> tells Spring to auto-configure everything, scan for components, and start the embedded Tomcat server.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>DemoApplication.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@SpringBootApplication</td><td>Combines 3 annotations: @Configuration (config class), @EnableAutoConfiguration (auto-setup), @ComponentScan (find all @Controller, @Repository, etc.)</td></tr>
+        <tr><td>SpringApplication.run(...)</td><td>Boots up the entire Spring context — starts Tomcat, connects to DB, registers all beans, and begins listening for HTTP requests</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  WEBCONFIG  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="webconfig">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">WebConfig.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/WebConfig.java</div>
+    <span class="tag config">CORS Configuration</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Configures CORS (Cross-Origin Resource Sharing). Browsers block requests from one origin (localhost:5173) to another (localhost:8080) by default. This config tells Spring Boot to allow React to make API calls.</p>
+      <p><strong>Without this:</strong> Every Axios call from React would fail with a CORS error.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>WebConfig.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@Configuration</td><td>Tells Spring this class contains configuration beans — Spring reads it on startup</td></tr>
+        <tr><td>implements WebMvcConfigurer</td><td>Interface that lets us customize Spring MVC settings like CORS</td></tr>
+        <tr><td>addMapping("/api/**")</td><td>Apply CORS to all URLs starting with /api/</td></tr>
+        <tr><td>allowedOrigins("http://localhost:5173")</td><td>Only allow requests from React's dev server</td></tr>
+        <tr><td>allowedMethods(...)</td><td>Allow these HTTP methods from the frontend</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  DATASEEDER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="dataseeder">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">DataSeeder.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/DataSeeder.java</div>
+    <span class="tag config">Startup Script</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Runs automatically when the server starts. Creates the admin account in the database so you can login as admin without registering first.</p>
+      <p><strong>CommandLineRunner:</strong> A Spring interface — any class that implements it will have its <strong>run()</strong> method called right after the application starts.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>DataSeeder.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo;
+
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+@Component
+public class DataSeeder implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+
+    public DataSeeder(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public void run(String... args) {
+        if (userRepository.findByEmail("admin@demo.com") == null) {
+            User admin = new User();
+            admin.setName("Admin");
+            admin.setEmail("admin@demo.com");
+            admin.setPassword("admin123");
+            admin.setRole("ADMIN");
+            userRepository.save(admin);
+            System.out.println("Admin user created!");
+        }
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@Component</td><td>Registers this class as a Spring bean — Spring will auto-detect and manage it</td></tr>
+        <tr><td>implements CommandLineRunner</td><td>The run() method executes automatically after the app starts</td></tr>
+        <tr><td>Constructor injection</td><td>Spring automatically provides the UserRepository instance — this is called Dependency Injection</td></tr>
+        <tr><td>findByEmail("admin@demo.com")</td><td>Check if admin already exists (prevents duplicate on restart)</td></tr>
+        <tr><td>userRepository.save(admin)</td><td>INSERT INTO users (...) VALUES (...) — saves the admin user to the database</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  USER MODEL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="user">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">User.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/model/User.java</div>
+    <span class="tag model">Entity / Model</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Represents the USERS table in the database. Each instance of this class = one row in the table. Has fields for id, name, email, password, and role (PATIENT or ADMIN).</p>
+      <p><strong>@Entity</strong> tells Hibernate to create a database table from this class. Hibernate reads the fields and generates the table columns automatically.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>User.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo.model;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "users")
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String email;
+    private String password;
+    private String role;
+
+    public User() {}
+
+    // Getters and Setters for all fields
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@Entity</td><td>Marks this class as a JPA entity — Hibernate will create a table for it</td></tr>
+        <tr><td>@Table(name = "users")</td><td>Custom table name. "User" is a reserved word in H2, so we use "users"</td></tr>
+        <tr><td>@Id</td><td>This field is the PRIMARY KEY</td></tr>
+        <tr><td>@GeneratedValue(IDENTITY)</td><td>Auto-increment — database generates 1, 2, 3... automatically</td></tr>
+        <tr><td>private String role</td><td>Stores "PATIENT" or "ADMIN" — determines what the user can access</td></tr>
+        <tr><td>public User() {}</td><td>Empty constructor — required by JPA/Hibernate to create objects from database rows</td></tr>
+        <tr><td>Getters/Setters</td><td>Required for Spring to read/write the fields when converting to/from JSON</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  SPECIALTY MODEL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="specialty">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">Specialty.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/model/Specialty.java</div>
+    <span class="tag model">Entity / Model</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Represents medical specialties like Cardiology, Dermatology, Pediatrics. Simplest entity — just id and name. Doctors are linked to a specialty via @ManyToOne.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>Specialty.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Specialty {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    public Specialty() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  DOCTOR MODEL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="doctor">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">Doctor.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/model/Doctor.java</div>
+    <span class="tag model">Entity / Model</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Represents a doctor. Has a <strong>mode</strong> field (ONLINE or OFFLINE) — this is the key business rule. Online doctors provide a video link, offline doctors provide a clinic address. Each doctor belongs to one specialty.</p>
+      <p><strong>@ManyToOne:</strong> Many doctors can belong to one specialty. This creates a foreign key column <strong>specialty_id</strong> in the DOCTOR table.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>Doctor.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Doctor {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private String mode;           // "ONLINE" or "OFFLINE"
+    private String videoLink;      // for online doctors
+    private String clinicAddress;  // for offline doctors
+
+    @ManyToOne
+    @JoinColumn(name = "specialty_id")
+    private Specialty specialty;
+
+    public Doctor() {}
+
+    // All getters and setters...
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>private String mode</td><td>Stores "ONLINE" or "OFFLINE" — business rule says different doctors per mode</td></tr>
+        <tr><td>private String videoLink</td><td>Only used for ONLINE doctors — stores the teleconsultation link</td></tr>
+        <tr><td>private String clinicAddress</td><td>Only used for OFFLINE doctors — stores the clinic location</td></tr>
+        <tr><td>@ManyToOne</td><td>Foreign key relationship: Many doctors → One specialty</td></tr>
+        <tr><td>@JoinColumn(name = "specialty_id")</td><td>The FK column name in the DOCTOR table will be "specialty_id"</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  SLOT MODEL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="slot">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">Slot.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/model/Slot.java</div>
+    <span class="tag model">Entity / Model</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Represents an available time slot for a doctor. The <strong>isBooked</strong> field is crucial — it prevents double booking. When a patient books, isBooked flips to true. When they cancel, it flips back to false.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>Slot.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Slot {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String date;       // "2026-03-30"
+    private String startTime;  // "10:00"
+    private String endTime;    // "10:30"
+    private boolean isBooked;  // false = available, true = taken
+
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
+    public Slot() {}
+    // All getters and setters...
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>private boolean isBooked</td><td>The slot lock mechanism. false = available for booking, true = already taken</td></tr>
+        <tr><td>@ManyToOne → Doctor</td><td>Many slots belong to one doctor. FK column: doctor_id</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  APPOINTMENT MODEL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="appointment">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">Appointment.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/model/Appointment.java</div>
+    <span class="tag model">Entity / Model</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The core entity — represents a booked appointment. Links a patient (User), a doctor, and a slot together. Has a <strong>status lifecycle</strong>: CONFIRMED → COMPLETED | CANCELLED | NO_SHOW.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>Appointment.java</span><span class="code-lang java">Java</span></div>
+<pre>package com.example.demo.model;
+
+import jakarta.persistence.*;
+
+@Entity
+public class Appointment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String status;      // CONFIRMED | COMPLETED | CANCELLED | NO_SHOW
+    private String bookingDate; // when the booking was made
+
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    private User patient;
+
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
+
+    @ManyToOne
+    @JoinColumn(name = "slot_id")
+    private Slot slot;
+
+    public Appointment() {}
+    // All getters and setters...
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>private String status</td><td>Appointment lifecycle: starts as CONFIRMED, can become COMPLETED, CANCELLED, or NO_SHOW</td></tr>
+        <tr><td>@ManyToOne → User patient</td><td>Which patient booked this? FK: patient_id</td></tr>
+        <tr><td>@ManyToOne → Doctor doctor</td><td>Which doctor is this with? FK: doctor_id</td></tr>
+        <tr><td>@ManyToOne → Slot slot</td><td>Which time slot? FK: slot_id (one slot = one appointment)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  REPOSITORIES  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="user-repo">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">All Repositories</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/repository/</div>
+    <span class="tag repo">Repository Layer</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Interfaces (not classes!) that extend <strong>JpaRepository</strong>. Spring automatically generates the implementation at runtime — you get findAll(), findById(), save(), delete() for free. Custom methods are generated from the method name.</p>
+      <p><strong>Key concept:</strong> You write ZERO SQL. Spring reads "findByEmail" and generates <em>SELECT * FROM users WHERE email = ?</em></p>
+    </div>
+
+    <div class="code-box" id="specialty-repo">
+      <div class="code-top"><span>UserRepository.java</span><span class="code-lang java">Java</span></div>
+<pre>public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+    User findByEmail(String email);
+    // Custom: WHERE email = ?
+}</pre>
+    </div>
+
+    <div class="code-box" id="doctor-repo">
+      <div class="code-top"><span>DoctorRepository.java</span><span class="code-lang java">Java</span></div>
+<pre>public interface DoctorRepository extends JpaRepository&lt;Doctor, Long&gt; {
+    List&lt;Doctor&gt; findBySpecialtyIdAndMode(Long specialtyId, String mode);
+    // Custom: WHERE specialty_id = ? AND mode = ?
+}</pre>
+    </div>
+
+    <div class="code-box" id="slot-repo">
+      <div class="code-top"><span>SlotRepository.java</span><span class="code-lang java">Java</span></div>
+<pre>public interface SlotRepository extends JpaRepository&lt;Slot, Long&gt; {
+    List&lt;Slot&gt; findByDoctorIdAndDateAndIsBooked(Long doctorId, String date, boolean isBooked);
+    // Custom: WHERE doctor_id = ? AND date = ? AND is_booked = ?
+    // We pass isBooked=false to get only AVAILABLE slots
+}</pre>
+    </div>
+
+    <div class="code-box" id="appointment-repo">
+      <div class="code-top"><span>AppointmentRepository.java</span><span class="code-lang java">Java</span></div>
+<pre>public interface AppointmentRepository extends JpaRepository&lt;Appointment, Long&gt; {
+    List&lt;Appointment&gt; findByPatientId(Long patientId);
+    // Custom: WHERE patient_id = ? (patient's appointments)
+
+    List&lt;Appointment&gt; findByBookingDate(String date);
+    // Custom: WHERE booking_date = ? (admin daily view)
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  AUTH CONTROLLER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="auth-ctrl">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">AuthController.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/controller/AuthController.java</div>
+    <span class="tag ctrl">Controller</span> <span class="tag sec">Public API</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Handles user registration and login. These endpoints are <strong>public</strong> — no JWT token needed. On successful login, it returns a JWT token that the frontend stores and uses for all future requests.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>AuthController.java</span><span class="code-lang java">Java</span></div>
+<pre>@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final UserRepository userRepository;
+
+    public AuthController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @PostMapping("/register")
+    public User register(@RequestBody User user) {
+        user.setRole("PATIENT");          // Always register as PATIENT
+        return userRepository.save(user); // Save to database
+    }
+
+    @PostMapping("/login")
+    public Map&lt;String, String&gt; login(@RequestBody Map&lt;String, String&gt; body) {
+        String email = body.get("email");
+        String password = body.get("password");
+
+        User user = userRepository.findByEmail(email);
+        if (user == null || !user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String token = JwtUtil.generateToken(user.getEmail(), user.getRole());
+        return Map.of("token", token, "role", user.getRole(), "name", user.getName());
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@RequestMapping("/api/auth")</td><td>Base URL — all endpoints here start with /api/auth</td></tr>
+        <tr><td>@PostMapping("/register")</td><td>POST /api/auth/register — creates a new patient</td></tr>
+        <tr><td>@RequestBody User user</td><td>Spring reads the JSON body and fills a User object automatically</td></tr>
+        <tr><td>user.setRole("PATIENT")</td><td>Force role to PATIENT — can't register as admin</td></tr>
+        <tr><td>@PostMapping("/login")</td><td>POST /api/auth/login — authenticates and returns JWT</td></tr>
+        <tr><td>userRepository.findByEmail(email)</td><td>Look up user in database by email</td></tr>
+        <tr><td>JwtUtil.generateToken(...)</td><td>Creates a signed JWT token containing email and role</td></tr>
+        <tr><td>Map.of("token", token, ...)</td><td>Returns JSON: { "token": "...", "role": "PATIENT", "name": "John" }</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  SPECIALTY CONTROLLER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="specialty-ctrl">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">SpecialtyController.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/controller/SpecialtyController.java</div>
+    <span class="tag ctrl">Controller</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Simple CRUD for specialties. GET to list all, POST to add new. Patients browse specialties to find doctors. Admin adds new ones.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>SpecialtyController.java</span><span class="code-lang java">Java</span></div>
+<pre>@RestController
+@RequestMapping("/api/specialties")
+public class SpecialtyController {
+
+    private final SpecialtyRepository specialtyRepository;
+
+    @GetMapping                              // GET /api/specialties
+    public List&lt;Specialty&gt; getAll() {
+        return specialtyRepository.findAll(); // SELECT * FROM specialty
+    }
+
+    @PostMapping                              // POST /api/specialties
+    public Specialty create(@RequestBody Specialty specialty) {
+        return specialtyRepository.save(specialty); // INSERT INTO specialty
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  DOCTOR CONTROLLER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="doctor-ctrl">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">DoctorController.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/controller/DoctorController.java</div>
+    <span class="tag ctrl">Controller</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Manages doctors. Patients filter by specialty + mode. Admin adds new doctors with specialty link, mode, and contact details.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>DoctorController.java</span><span class="code-lang java">Java</span></div>
+<pre>@RestController
+@RequestMapping("/api/doctors")
+public class DoctorController {
+
+    private final DoctorRepository doctorRepository;
+    private final SpecialtyRepository specialtyRepository;
+
+    @GetMapping  // GET /api/doctors?specialtyId=1&mode=ONLINE
+    public List&lt;Doctor&gt; getBySpecialtyAndMode(
+            @RequestParam Long specialtyId,
+            @RequestParam String mode) {
+        return doctorRepository.findBySpecialtyIdAndMode(specialtyId, mode);
+    }
+
+    @GetMapping("/all")  // GET /api/doctors/all (admin)
+    public List&lt;Doctor&gt; getAll() {
+        return doctorRepository.findAll();
+    }
+
+    @PostMapping  // POST /api/doctors
+    public Doctor create(@RequestBody Map&lt;String, String&gt; body) {
+        Doctor doctor = new Doctor();
+        doctor.setName(body.get("name"));
+        doctor.setMode(body.get("mode"));
+        doctor.setVideoLink(body.get("videoLink"));
+        doctor.setClinicAddress(body.get("clinicAddress"));
+
+        Specialty specialty = specialtyRepository
+            .findById(Long.parseLong(body.get("specialtyId")))
+            .orElseThrow();
+        doctor.setSpecialty(specialty);
+
+        return doctorRepository.save(doctor);
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>@RequestParam Long specialtyId</td><td>Reads ?specialtyId=1 from the URL query string</td></tr>
+        <tr><td>findBySpecialtyIdAndMode(...)</td><td>Spring auto-generates: WHERE specialty_id = ? AND mode = ?</td></tr>
+        <tr><td>specialtyRepository.findById(...).orElseThrow()</td><td>Find specialty by ID, throw error if not found</td></tr>
+        <tr><td>doctor.setSpecialty(specialty)</td><td>Links the doctor to the specialty (sets the FK)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  SLOT CONTROLLER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="slot-ctrl">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">SlotController.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/controller/SlotController.java</div>
+    <span class="tag ctrl">Controller</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Manages time slots. Patients view available (unbooked) slots for a doctor on a specific date. Admin creates new slots.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>SlotController.java</span><span class="code-lang java">Java</span></div>
+<pre>@RestController
+@RequestMapping("/api/slots")
+public class SlotController {
+
+    @GetMapping  // GET /api/slots?doctorId=1&date=2026-03-30
+    public List&lt;Slot&gt; getAvailableSlots(
+            @RequestParam Long doctorId,
+            @RequestParam String date) {
+        return slotRepository
+            .findByDoctorIdAndDateAndIsBooked(doctorId, date, false);
+        // false = only return AVAILABLE (unbooked) slots
+    }
+
+    @PostMapping  // POST /api/slots
+    public Slot create(@RequestBody Map&lt;String, String&gt; body) {
+        Slot slot = new Slot();
+        slot.setDate(body.get("date"));
+        slot.setStartTime(body.get("startTime"));
+        slot.setEndTime(body.get("endTime"));
+        slot.setIsBooked(false);  // new slots are always available
+
+        Doctor doctor = doctorRepository
+            .findById(Long.parseLong(body.get("doctorId")))
+            .orElseThrow();
+        slot.setDoctor(doctor);
+
+        return slotRepository.save(slot);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  APPOINTMENT CONTROLLER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="appointment-ctrl">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">AppointmentController.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/controller/AppointmentController.java</div>
+    <span class="tag ctrl">Controller</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The most complex controller. Handles booking (with double-booking prevention), viewing appointments, cancellation (frees the slot), status updates, and daily summary statistics.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>AppointmentController.java — book()</span><span class="code-lang java">Java</span></div>
+<pre>@PostMapping  // POST /api/appointments
+public Appointment book(@RequestBody Map&lt;String, String&gt; body) {
+    // 1. Find the slot
+    Slot slot = slotRepository.findById(Long.parseLong(body.get("slotId")))
+        .orElseThrow();
+
+    // 2. DOUBLE BOOKING CHECK - if already booked, reject!
+    if (slot.getIsBooked()) {
+        throw new RuntimeException("Slot already booked");
+    }
+
+    // 3. Lock the slot - mark as booked
+    slot.setIsBooked(true);
+    slotRepository.save(slot);
+
+    // 4. Create the appointment
+    User patient = userRepository.findByEmail(body.get("patientEmail"));
+    Appointment appointment = new Appointment();
+    appointment.setPatient(patient);
+    appointment.setDoctor(slot.getDoctor());
+    appointment.setSlot(slot);
+    appointment.setStatus("CONFIRMED");
+    appointment.setBookingDate(LocalDate.now().toString());
+
+    return appointmentRepository.save(appointment);
+}</pre>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>AppointmentController.java — cancel()</span><span class="code-lang java">Java</span></div>
+<pre>@PutMapping("/{id}/cancel")  // PUT /api/appointments/5/cancel
+public Appointment cancel(@PathVariable Long id) {
+    Appointment appointment = appointmentRepository.findById(id).orElseThrow();
+    appointment.setStatus("CANCELLED");
+
+    // FREE THE SLOT - so another patient can book it
+    Slot slot = appointment.getSlot();
+    slot.setIsBooked(false);
+    slotRepository.save(slot);
+
+    return appointmentRepository.save(appointment);
+}</pre>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>AppointmentController.java — summary()</span><span class="code-lang java">Java</span></div>
+<pre>@GetMapping("/summary")  // GET /api/appointments/summary?date=2026-03-30
+public Map&lt;String, Object&gt; getSummary(@RequestParam String date) {
+    List&lt;Appointment&gt; all = appointmentRepository.findByBookingDate(date);
+
+    // Group by mode: { "ONLINE": 5, "OFFLINE": 3 }
+    Map&lt;String, Long&gt; byMode = all.stream()
+        .collect(Collectors.groupingBy(
+            a -> a.getDoctor().getMode(), Collectors.counting()));
+
+    // Group by specialty: { "Cardiology": 4, "Dermatology": 2 }
+    Map&lt;String, Long&gt; bySpecialty = all.stream()
+        .collect(Collectors.groupingBy(
+            a -> a.getDoctor().getSpecialty().getName(), Collectors.counting()));
+
+    // Group by status: { "CONFIRMED": 6, "COMPLETED": 2 }
+    Map&lt;String, Long&gt; byStatus = all.stream()
+        .collect(Collectors.groupingBy(
+            Appointment::getStatus, Collectors.counting()));
+
+    return Map.of("total", all.size(),
+        "byMode", byMode, "bySpecialty", bySpecialty, "byStatus", byStatus);
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Key Concept</th><th>Explanation</th></tr>
+        <tr><td>Double booking prevention</td><td>Check slot.getIsBooked() BEFORE saving — if true, throw error</td></tr>
+        <tr><td>Slot locking</td><td>Set isBooked=true on booking, isBooked=false on cancellation</td></tr>
+        <tr><td>@PathVariable Long id</td><td>Reads {id} from URL — /appointments/5/cancel → id = 5</td></tr>
+        <tr><td>Collectors.groupingBy()</td><td>Java Stream API — groups a list into a map by a key (like SQL GROUP BY)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  JWT UTIL  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="jwtutil">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">JwtUtil.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/security/JwtUtil.java</div>
+    <span class="tag sec">Security</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The token factory. Creates JWT tokens on login, extracts user info from tokens, and validates tokens. Uses HS256 signing algorithm with a secret key.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>JwtUtil.java</span><span class="code-lang java">Java</span></div>
+<pre>public class JwtUtil {
+
+    // Secret key for signing tokens — generated once, stays in memory
+    private static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final long EXPIRATION = 86400000; // 24 hours in milliseconds
+
+    // CREATE a token from email + role
+    public static String generateToken(String email, String role) {
+        return Jwts.builder()
+                .subject(email)              // who this token belongs to
+                .claim("role", role)          // custom data: PATIENT or ADMIN
+                .issuedAt(new Date())         // when token was created
+                .expiration(new Date(         // when it expires (24h later)
+                    System.currentTimeMillis() + EXPIRATION))
+                .signWith(SECRET_KEY)         // sign with secret key
+                .compact();                   // build the token string
+    }
+
+    // READ email from a token
+    public static String extractEmail(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)   // use same key to verify
+                .build()
+                .parseSignedClaims(token)    // decode the token
+                .getPayload()
+                .getSubject();               // get the email (subject)
+    }
+
+    // CHECK if token is valid (not expired, not tampered)
+    public static boolean isValid(String token) {
+        try {
+            extractEmail(token);  // if this works, token is valid
+            return true;
+        } catch (Exception e) {
+            return false;         // expired, wrong signature, etc.
+        }
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  JWT FILTER  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="jwtfilter">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">JwtFilter.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/security/JwtFilter.java</div>
+    <span class="tag sec">Security</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> A security guard that intercepts EVERY HTTP request before it reaches any controller. It checks for a valid JWT token in the Authorization header. If the token is valid, the request is allowed through. If not, the request is blocked with 403 Forbidden.</p>
+      <p><strong>OncePerRequestFilter:</strong> A Spring class that guarantees this filter runs exactly once per request.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>JwtFilter.java</span><span class="code-lang java">Java</span></div>
+<pre>public class JwtFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,      // incoming HTTP request
+            HttpServletResponse response,    // outgoing HTTP response
+            FilterChain filterChain          // chain of other filters
+    ) throws ServletException, IOException {
+
+        // 1. Read the Authorization header
+        String header = request.getHeader("Authorization");
+
+        // 2. Check if it contains a Bearer token
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7); // remove "Bearer " prefix
+
+            // 3. Validate the token
+            if (JwtUtil.isValid(token)) {
+                String email = JwtUtil.extractEmail(token);
+
+                // 4. Tell Spring Security "this user is authenticated"
+                UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                        email, null, Collections.emptyList());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        }
+
+        // 5. Continue to the next filter / controller
+        filterChain.doFilter(request, response);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  SECURITY CONFIG  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="securityconfig">
+    <div class="file-header">
+      <div class="file-icon java">J</div>
+      <div class="file-name">SecurityConfig.java</div>
+    </div>
+    <div class="file-path">src/main/java/com/example/demo/security/SecurityConfig.java</div>
+    <span class="tag sec">Security</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Defines the security rules — which URLs are public, which need authentication, and where our JWT filter sits in the chain.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>SecurityConfig.java</span><span class="code-lang java">Java</span></div>
+<pre>@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())           // disable CSRF (not needed for REST APIs)
+            .cors(cors -> cors.configure(http))      // enable CORS
+            .sessionManagement(s -> s               // no sessions — we use JWT tokens
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()   // login/register = PUBLIC
+                .requestMatchers("/h2-console/**").permitAll() // DB console = PUBLIC
+                .anyRequest().authenticated()                   // everything else = NEED TOKEN
+            )
+            .headers(headers -> headers             // allow H2 console in iframe
+                .frameOptions(f -> f.disable()))
+            .addFilterBefore(new JwtFilter(),        // add our JWT filter BEFORE
+                UsernamePasswordAuthenticationFilter.class);  // Spring's default filter
+
+        return http.build();
+    }
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Line</th><th>Explanation</th></tr>
+        <tr><td>csrf.disable()</td><td>CSRF protection is for form-based apps. REST APIs use tokens instead — so we disable it</td></tr>
+        <tr><td>SessionCreationPolicy.STATELESS</td><td>Don't create HTTP sessions — every request must carry its own JWT token</td></tr>
+        <tr><td>"/api/auth/**".permitAll()</td><td>Anyone can access login and register endpoints without a token</td></tr>
+        <tr><td>.anyRequest().authenticated()</td><td>All other endpoints require a valid JWT token</td></tr>
+        <tr><td>addFilterBefore(new JwtFilter(), ...)</td><td>Insert our custom JwtFilter before Spring's default auth filter</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================ -->
+  <!--  FRONTEND FILES  -->
+  <!-- ============================================ -->
+  <div class="file-section" id="main-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">main.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/main.jsx</div>
+    <span class="tag react">React Entry Point</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The entry point of the React app. It renders the App component into the HTML page's root div. StrictMode is a development helper that warns about potential problems.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>main.jsx</span><span class="code-lang jsx">JSX</span></div>
+<pre>import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'        // Global CSS styles
+import App from './App.jsx' // Main App component
+
+createRoot(document.getElementById('root')).render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+)</pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="file-section" id="app-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">App.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/App.jsx</div>
+    <span class="tag react">Router</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Defines all the page routes. BrowserRouter enables client-side routing — clicking a link swaps the component without reloading the page. Each Route maps a URL path to a React component.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-top"><span>App.jsx</span><span class="code-lang jsx">JSX</span></div>
+<pre>import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Dashboard from './pages/Dashboard'
+import AdminDashboard from './pages/AdminDashboard'
+
+function App() {
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Login /&gt;} /&gt;
+        &lt;Route path="/register" element={&lt;Register /&gt;} /&gt;
+        &lt;Route path="/dashboard" element={&lt;Dashboard /&gt;} /&gt;
+        &lt;Route path="/admin" element={&lt;AdminDashboard /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/BrowserRouter&gt;
+  )
+}</pre>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Route</th><th>Component</th></tr>
+        <tr><td>/</td><td>Login page — the default page</td></tr>
+        <tr><td>/register</td><td>Registration page for new patients</td></tr>
+        <tr><td>/dashboard</td><td>Patient dashboard — browse, book, manage appointments</td></tr>
+        <tr><td>/admin</td><td>Admin panel — manage specialties, doctors, slots, view summary</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="file-section" id="login-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">Login.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/pages/Login.jsx</div>
+    <span class="tag react">Page Component</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Login form page. Takes email and password, sends POST to /api/auth/login, receives JWT token, stores it in localStorage, then redirects — admin goes to /admin, patient goes to /dashboard.</p>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Key Code</th><th>Explanation</th></tr>
+        <tr><td>useState('')</td><td>Creates state variables for email, password, and error message</td></tr>
+        <tr><td>useNavigate()</td><td>React Router hook — allows programmatic page navigation</td></tr>
+        <tr><td>axios.post('/api/auth/login', { email, password })</td><td>Sends login credentials to the backend</td></tr>
+        <tr><td>localStorage.setItem('token', res.data.token)</td><td>Stores the JWT token in browser storage — persists across page refreshes</td></tr>
+        <tr><td>localStorage.setItem('role', res.data.role)</td><td>Stores the role so we know which dashboard to show</td></tr>
+        <tr><td>navigate('/admin') or navigate('/dashboard')</td><td>Redirects based on role after successful login</td></tr>
+        <tr><td>.catch(() => setError(...))</td><td>If login fails, show error message</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="file-section" id="register-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">Register.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/pages/Register.jsx</div>
+    <span class="tag react">Page Component</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> Registration form for new patients. Takes name, email, password. Sends POST to /api/auth/register. On success, shows a message and redirects to login page after 2 seconds.</p>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Key Code</th><th>Explanation</th></tr>
+        <tr><td>axios.post('/api/auth/register', { name, email, password })</td><td>Sends registration data — backend auto-sets role to PATIENT</td></tr>
+        <tr><td>setTimeout(() => navigate('/'), 2000)</td><td>Wait 2 seconds then redirect to login page</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="file-section" id="dashboard-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">Dashboard.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/pages/Dashboard.jsx</div>
+    <span class="tag react">Page Component</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The patient dashboard — the largest React component. Has two tabs: "Book Appointment" (4-step booking flow) and "My Appointments" (table with cancel option). All API calls include the JWT token in the header.</p>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Key Code</th><th>Explanation</th></tr>
+        <tr><td>const token = localStorage.getItem('token')</td><td>Read the stored JWT token</td></tr>
+        <tr><td>const headers = { Authorization: `Bearer ${token}` }</td><td>Create the auth header — sent with every API call</td></tr>
+        <tr><td>useEffect(() => { fetchSpecialties() }, [])</td><td>On page load, fetch the list of specialties from backend</td></tr>
+        <tr><td>handleModeChange('ONLINE')</td><td>When user clicks mode button, fetch doctors matching that mode</td></tr>
+        <tr><td>handleSpecialtyChange(e)</td><td>When user selects specialty, fetch doctors for that specialty + current mode</td></tr>
+        <tr><td>handleDoctorSelect(doctor)</td><td>When user clicks a doctor card, prepare for slot selection</td></tr>
+        <tr><td>handleDateChange(e)</td><td>When user picks a date, fetch available slots for selected doctor on that date</td></tr>
+        <tr><td>bookAppointment(slotId)</td><td>POST /api/appointments — sends slotId and patient email, books the appointment</td></tr>
+        <tr><td>cancelAppointment(id)</td><td>PUT /api/appointments/{id}/cancel — cancels and frees the slot</td></tr>
+        <tr><td>if (!token) navigate('/')</td><td>Security check — if no token, redirect to login</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="file-section" id="admin-jsx">
+    <div class="file-header">
+      <div class="file-icon jsx">R</div>
+      <div class="file-name">AdminDashboard.jsx</div>
+    </div>
+    <div class="file-path">frontend/src/pages/AdminDashboard.jsx</div>
+    <span class="tag react">Page Component</span>
+
+    <div class="explain">
+      <p><strong>What:</strong> The admin panel with 4 tabs: Specialties (add/view), Doctors (register/list), Time Slots (create), and Appointments & Summary (view by date, update status, see stats by mode/specialty/status).</p>
+    </div>
+
+    <div class="line-explain">
+      <table>
+        <tr><th>Key Code</th><th>Explanation</th></tr>
+        <tr><td>if (role !== 'ADMIN') navigate('/')</td><td>Security check — only admins can access this page</td></tr>
+        <tr><td>addSpecialty(e)</td><td>POST /api/specialties — adds a new medical specialty</td></tr>
+        <tr><td>addDoctor(e)</td><td>POST /api/doctors — registers a doctor with name, specialty, mode, and contact info</td></tr>
+        <tr><td>addSlot(e)</td><td>POST /api/slots — creates time slot with doctor, date, start/end time</td></tr>
+        <tr><td>fetchAppointments(date)</td><td>GET /api/appointments/all?date=X — fetches all appointments for a specific date</td></tr>
+        <tr><td>GET /api/appointments/summary</td><td>Fetches stats: total, grouped by mode (ONLINE/OFFLINE), specialty, and status</td></tr>
+        <tr><td>updateStatus(id, 'COMPLETED')</td><td>PUT /api/appointments/{id}/status — marks appointment as completed</td></tr>
+        <tr><td>updateStatus(id, 'NO_SHOW')</td><td>PUT /api/appointments/{id}/status — marks patient as no-show</td></tr>
+        <tr><td>summary-grid</td><td>Displays stat cards showing totals by mode, specialty, and status</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:60px 0;color:#475569;border-top:1px solid rgba(255,255,255,0.06);margin-top:48px">
+    <p style="font-size:18px;font-weight:700;color:#94a3b8">Doctor Appointment System</p>
+    <p style="font-size:13px;margin-top:8px">29 files | React + Spring Boot + JWT + H2 | HCL Hackathon 2026</p>
+  </div>
+
+</div>
+
+</body>
+</html>

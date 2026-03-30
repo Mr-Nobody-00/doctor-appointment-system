@@ -20,6 +20,7 @@ function AdminDashboard() {
   const [slotDate, setSlotDate] = useState('')
   const [slotStart, setSlotStart] = useState('')
   const [slotEnd, setSlotEnd] = useState('')
+  const [uploadResult, setUploadResult] = useState(null)
 
   const [summaryDate, setSummaryDate] = useState('')
 
@@ -66,6 +67,22 @@ function AdminDashboard() {
       doctorId: slotDoctor, date: slotDate, startTime: slotStart, endTime: slotEnd
     }, { headers })
       .then(() => { alert('Slot created!'); setSlotStart(''); setSlotEnd('') })
+  }
+
+  const uploadCSV = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    const formData = new FormData()
+    formData.append('file', file)
+    axios.post('http://localhost:8080/api/slots/upload', formData, {
+      headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+    })
+      .then(res => {
+        setUploadResult(res.data)
+        alert(`${res.data.created} slots created!` + (res.data.errors.length > 0 ? ` ${res.data.errors.length} errors.` : ''))
+        e.target.value = ''
+      })
+      .catch(() => alert('Upload failed'))
   }
 
   const updateStatus = (id, status) => {
@@ -201,6 +218,32 @@ function AdminDashboard() {
                 </div>
                 <button type="submit" className="btn btn-primary">Create Slot</button>
               </form>
+            </div>
+            <div className="step-card">
+              <h3>Bulk Upload Slots (CSV)</h3>
+              <p style={{color: '#94a3b8', marginBottom: '16px', fontSize: '14px'}}>
+                Upload a CSV file with format: <code style={{background: 'rgba(255,255,255,0.06)', padding: '4px 8px', borderRadius: '6px', fontSize: '13px'}}>doctorId,date,startTime,endTime</code>
+              </p>
+              <div className="json-example" style={{background: '#f0f4ff', border: '2px solid #e2e8f0', borderRadius: '12px', padding: '16px', marginBottom: '16px', fontFamily: 'monospace', fontSize: '13px', color: '#334155', lineHeight: '1.8'}}>
+                <div style={{color: '#64748b', marginBottom: '4px'}}>Example CSV:</div>
+                <div>doctorId,date,startTime,endTime</div>
+                <div>1,2026-03-30,09:00,09:30</div>
+                <div>1,2026-03-30,09:30,10:00</div>
+                <div>2,2026-03-30,10:00,10:30</div>
+              </div>
+              <input type="file" accept=".csv" onChange={uploadCSV} style={{marginBottom: '16px'}} />
+              {uploadResult && (
+                <div style={{marginTop: '12px'}}>
+                  <p style={{color: '#22c55e', fontWeight: 700}}>{uploadResult.created} slots created successfully</p>
+                  {uploadResult.errors && uploadResult.errors.length > 0 && (
+                    <div style={{marginTop: '8px'}}>
+                      {uploadResult.errors.map((err, i) => (
+                        <p key={i} style={{color: '#ef4444', fontSize: '13px'}}>{err}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
