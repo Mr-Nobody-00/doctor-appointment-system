@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Appointment System - Architecture Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+    /* NAV */
+    .top-nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: rgba(15,23,42,0.95); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 40px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .top-nav h1 { font-size: 20px; font-weight: 800; color: #60a5fa; }
+    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav-links a {
+      color: #94a3b8; text-decoration: none; font-size: 13px; font-weight: 600;
+      padding: 6px 14px; border-radius: 8px; transition: all 0.3s;
+    }
+    .nav-links a:hover { color: white; background: rgba(96,165,250,0.15); }
+
+    /* MAIN */
+    .container { max-width: 1100px; margin: 0 auto; padding: 100px 40px 60px; }
+
+    /* HERO */
+    .hero {
+      text-align: center; padding: 80px 0 60px;
+      background: radial-gradient(ellipse at center, rgba(59,130,246,0.12) 0%, transparent 70%);
+      border-radius: 30px; margin-bottom: 60px;
+    }
+    .hero h1 { font-size: 48px; font-weight: 800; color: white; margin-bottom: 16px; letter-spacing: -1px; }
+    .hero p { font-size: 20px; color: #94a3b8; max-width: 700px; margin: 0 auto; }
+    .tech-badges { display: flex; justify-content: center; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+    .tech-badge {
+      padding: 10px 22px; border-radius: 50px; font-size: 14px; font-weight: 700;
+      border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05);
+    }
+    .tech-badge.blue { color: #60a5fa; border-color: rgba(96,165,250,0.3); }
+    .tech-badge.green { color: #4ade80; border-color: rgba(74,222,128,0.3); }
+    .tech-badge.yellow { color: #facc15; border-color: rgba(250,204,21,0.3); }
+    .tech-badge.purple { color: #c084fc; border-color: rgba(192,132,252,0.3); }
+
+    /* SECTIONS */
+    .section { margin-bottom: 64px; }
+    .section-title {
+      font-size: 32px; font-weight: 800; color: white; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .section-num {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white; width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800; flex-shrink: 0;
+    }
+    .section-subtitle { color: #94a3b8; font-size: 17px; margin-bottom: 28px; margin-left: 62px; }
+
+    /* CARDS */
+    .card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 32px; margin-bottom: 20px;
+      transition: all 0.3s;
+    }
+    .card:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+    .card h3 { font-size: 22px; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; }
+    .card p { font-size: 16px; color: #94a3b8; margin-bottom: 12px; }
+
+    /* CODE BLOCKS */
+    .code-block {
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px; padding: 24px; margin: 16px 0;
+      font-family: 'Fira Code', 'Consolas', monospace; font-size: 14px;
+      color: #e2e8f0; overflow-x: auto; line-height: 1.9;
+    }
+    .code-block .keyword { color: #c084fc; }
+    .code-block .string { color: #4ade80; }
+    .code-block .comment { color: #64748b; }
+    .code-block .annotation { color: #facc15; }
+    .code-block .type { color: #60a5fa; }
+
+    /* DIAGRAM BOX */
+    .diagram {
+      background: #1e293b; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 40px; margin: 20px 0;
+      font-family: 'Consolas', monospace; font-size: 15px;
+      line-height: 1.8; color: #94a3b8; overflow-x: auto; white-space: pre;
+    }
+    .diagram .highlight { color: #60a5fa; font-weight: 700; }
+    .diagram .green { color: #4ade80; }
+    .diagram .yellow { color: #facc15; }
+    .diagram .purple { color: #c084fc; }
+    .diagram .red { color: #f87171; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin: 16px 0; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: rgba(59,130,246,0.15); padding: 16px 20px; text-align: left;
+      font-size: 14px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px;
+    }
+    td { padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px; color: #cbd5e1; }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+
+    /* FLOW STEPS */
+    .flow-steps { display: flex; flex-direction: column; gap: 0; }
+    .flow-step {
+      display: flex; gap: 20px; align-items: flex-start; position: relative; padding-bottom: 32px;
+    }
+    .flow-step:last-child { padding-bottom: 0; }
+    .flow-step::before {
+      content: ''; position: absolute; left: 23px; top: 48px; bottom: 0;
+      width: 2px; background: rgba(96,165,250,0.2);
+    }
+    .flow-step:last-child::before { display: none; }
+    .step-icon {
+      width: 48px; height: 48px; border-radius: 14px; display: flex;
+      align-items: center; justify-content: center; font-weight: 800;
+      font-size: 18px; flex-shrink: 0; color: white;
+    }
+    .step-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .step-icon.green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .step-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    .step-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .step-icon.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .step-icon.cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .step-content h4 { font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px; }
+    .step-content p { font-size: 15px; color: #94a3b8; }
+
+    /* ANNOTATION LIST */
+    .anno-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .anno-item {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px; padding: 18px;
+    }
+    .anno-item code {
+      color: #facc15; font-family: 'Consolas', monospace; font-size: 15px;
+      font-weight: 700; display: block; margin-bottom: 6px;
+    }
+    .anno-item span { color: #94a3b8; font-size: 14px; }
+
+    /* ENTITY RELATIONSHIP */
+    .er-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .er-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 24px; border-top: 4px solid #3b82f6;
+    }
+    .er-card h4 { font-size: 18px; color: #60a5fa; margin-bottom: 12px; font-weight: 800; }
+    .er-card.c2 { border-top-color: #22c55e; }
+    .er-card.c2 h4 { color: #4ade80; }
+    .er-card.c3 { border-top-color: #f59e0b; }
+    .er-card.c3 h4 { color: #facc15; }
+    .er-card.c4 { border-top-color: #8b5cf6; }
+    .er-card.c4 h4 { color: #c084fc; }
+    .er-card.c5 { border-top-color: #ef4444; }
+    .er-card.c5 h4 { color: #f87171; }
+    .er-field { font-size: 14px; color: #94a3b8; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .er-field:last-child { border-bottom: none; }
+    .er-pk { color: #facc15; font-weight: 700; }
+    .er-fk { color: #c084fc; font-weight: 600; }
+
+    /* HIGHLIGHT BOX */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+      border: 1px solid rgba(96,165,250,0.2); border-radius: 16px;
+      padding: 24px 28px; margin: 20px 0;
+    }
+    .highlight-box p { color: #cbd5e1; font-size: 16px; font-weight: 500; }
+    .highlight-box strong { color: #60a5fa; }
+
+    /* ENDPOINT BADGE */
+    .method { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-right: 8px; font-family: monospace; }
+    .method.get { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .method.post { background: rgba(96,165,250,0.15); color: #60a5fa; }
+    .method.put { background: rgba(250,204,21,0.15); color: #facc15; }
+
+    @media (max-width: 768px) {
+      .container { padding: 80px 20px 40px; }
+      .hero h1 { font-size: 32px; }
+      .hero p { font-size: 16px; }
+      .section-title { font-size: 24px; }
+      .anno-grid { grid-template-columns: 1fr; }
+      .er-grid { grid-template-columns: 1fr; }
+      .top-nav { padding: 12px 20px; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="top-nav">
+    <h1>Architecture Guide</h1>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#frontend">Frontend</a>
+      <a href="#security">Security</a>
+      <a href="#controllers">Controllers</a>
+      <a href="#repositories">Repositories</a>
+      <a href="#entities">Entities</a>
+      <a href="#database">Database</a>
+      <a href="#endpoints">Endpoints</a>
+      <a href="#flow">Flow</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>Doctor Appointment System</h1>
+      <p>A full-stack web application built with React and Spring Boot for managing doctor appointments with online and offline consultation modes.</p>
+      <div class="tech-badges">
+        <span class="tech-badge blue">React 19</span>
+        <span class="tech-badge blue">Vite</span>
+        <span class="tech-badge green">Spring Boot 4.0</span>
+        <span class="tech-badge green">Spring Data JPA</span>
+        <span class="tech-badge yellow">JWT Auth</span>
+        <span class="tech-badge purple">H2 Database</span>
+        <span class="tech-badge blue">Hibernate ORM</span>
+        <span class="tech-badge yellow">Maven</span>
+      </div>
+    </div>
+
+    <!-- 1. ARCHITECTURE OVERVIEW -->
+    <div class="section" id="overview">
+      <div class="section-title"><span class="section-num">1</span> Architecture Overview</div>
+      <p class="section-subtitle">How all the pieces connect together</p>
+
+      <div class="diagram"><span class="highlight">CLIENT (Browser - React on port 5173)</span>
+  |
+  |  User interacts with Login, Register, Dashboard, Admin Panel
+  |  React uses <span class="green">Axios</span> to send HTTP requests
+  |  JWT Token attached in <span class="yellow">Authorization</span> header
+  |
+  ▼
+<span class="highlight">SERVER (Spring Boot on port 8080)</span>
+  |
+  ├── <span class="yellow">CORS Filter</span> (WebConfig.java)
+  |     Allows requests from localhost:5173
+  |
+  ├── <span class="red">JWT Security Filter</span> (JwtFilter.java)
+  |     Checks token → valid? → proceed : → 403 Forbidden
+  |     Public routes (/api/auth/**) skip this check
+  |
+  ├── <span class="green">Controller Layer</span> (REST APIs)
+  |     AuthController, SpecialtyController, DoctorController
+  |     SlotController, AppointmentController
+  |     Receives requests, processes logic, returns JSON
+  |
+  ├── <span class="purple">Repository Layer</span> (Spring Data JPA)
+  |     UserRepo, SpecialtyRepo, DoctorRepo, SlotRepo, AppointmentRepo
+  |     Generates SQL automatically from method names
+  |
+  ├── <span class="highlight">Hibernate ORM</span>
+  |     Converts Java objects ↔ SQL queries automatically
+  |
+  └── <span class="yellow">H2 Database</span> (In-Memory)
+        Tables: USERS, SPECIALTY, DOCTOR, SLOT, APPOINTMENT
+        Data lives in RAM, resets on server restart</div>
+
+      <div class="highlight-box">
+        <p><strong>Architecture Pattern:</strong> This is a <strong>Layered Architecture</strong> — each layer has a single responsibility. Frontend (UI) → Controller (API logic) → Repository (data access) → Database (storage). Each layer only talks to the layer directly below it.</p>
+      </div>
+    </div>
+
+    <!-- 2. FRONTEND -->
+    <div class="section" id="frontend">
+      <div class="section-title"><span class="section-num">2</span> Frontend — React + Vite</div>
+      <p class="section-subtitle">The user interface layer that runs in the browser</p>
+
+      <div class="card">
+        <h3>What is React?</h3>
+        <p>React is a JavaScript library for building user interfaces. It lets you build reusable <strong style="color:#60a5fa">components</strong> (like Login form, Doctor card, Appointment table) and compose them into full pages.</p>
+        <p>React is a <strong style="color:#60a5fa">Single Page Application (SPA)</strong> — the page never reloads. React Router swaps components in and out to simulate page navigation.</p>
+      </div>
+
+      <div class="card">
+        <h3>What is Vite?</h3>
+        <p>Vite is the build tool. It bundles all your React files, serves them on <strong style="color:#4ade80">localhost:5173</strong>, and provides instant hot-reload — when you save a file, the browser updates immediately without refreshing.</p>
+      </div>
+
+      <div class="card">
+        <h3>Key React Concepts Used</h3>
+        <div class="anno-grid">
+          <div class="anno-item">
+            <code>useState(initialValue)</code>
+            <span>Creates a state variable. When state changes, the component re-renders. Example: <em>useState('')</em> for form inputs, <em>useState([])</em> for lists.</span>
+          </div>
+          <div class="anno-item">
+            <code>useEffect(() => {}, [])</code>
+            <span>Runs code when the component loads. The empty <em>[]</em> means "run once on page load". We use this to fetch data from the API when a page opens.</span>
+          </div>
+          <div class="anno-item">
+            <code>axios.get(url, { headers })</code>
+            <span>Sends a GET request to the backend to fetch data. The JWT token is sent in the headers for authentication.</span>
+          </div>
+          <div class="anno-item">
+            <code>axios.post(url, data, { headers })</code>
+            <span>Sends a POST request with JSON data to create something new (register user, book appointment, etc).</span>
+          </div>
+          <div class="anno-item">
+            <code>localStorage.setItem(key, value)</code>
+            <span>Stores data in the browser's local storage. We store the JWT token here after login so it persists across page refreshes.</span>
+          </div>
+          <div class="anno-item">
+            <code>useNavigate()</code>
+            <span>React Router hook for programmatic navigation. After login, we call <em>navigate('/dashboard')</em> to go to the dashboard page.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Pages We Built</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>File</th><th>Route</th><th>Purpose</th></tr>
+            <tr><td>Login.jsx</td><td>/</td><td>Email + password login form. Stores JWT token on success.</td></tr>
+            <tr><td>Register.jsx</td><td>/register</td><td>New patient registration form.</td></tr>
+            <tr><td>Dashboard.jsx</td><td>/dashboard</td><td>Patient view — browse specialties, filter doctors, book slots, view appointments.</td></tr>
+            <tr><td>AdminDashboard.jsx</td><td>/admin</td><td>Admin view — manage specialties, doctors, slots, view appointments &amp; summary.</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. SECURITY -->
+    <div class="section" id="security">
+      <div class="section-title"><span class="section-num">3</span> JWT Security</div>
+      <p class="section-subtitle">How we protect the API — only logged-in users can access it</p>
+
+      <div class="card">
+        <h3>What is JWT?</h3>
+        <p><strong style="color:#facc15">JSON Web Token</strong> is a compact, URL-safe token that contains encoded user information. It's like a digital ID card — the server creates it on login, and the client shows it with every request to prove their identity.</p>
+        <p style="margin-top:12px">A JWT looks like: <code style="color:#4ade80; background:#1e293b; padding:4px 10px; border-radius:6px;">eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ...</code></p>
+        <p>It has 3 parts separated by dots: <strong style="color:#60a5fa">Header</strong>.<strong style="color:#4ade80">Payload</strong>.<strong style="color:#f87171">Signature</strong></p>
+      </div>
+
+      <div class="card">
+        <h3>How JWT Works in Our App</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-icon blue">1</div>
+            <div class="step-content">
+              <h4>User Sends Login Request</h4>
+              <p>React sends POST /api/auth/login with email and password in the request body.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon green">2</div>
+            <div class="step-content">
+              <h4>Server Validates Credentials</h4>
+              <p>AuthController checks email and password against the database. If valid, calls JwtUtil.generateToken().</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon purple">3</div>
+            <div class="step-content">
+              <h4>Server Creates JWT Token</h4>
+              <p>JwtUtil encodes the user's email and role into a token, signs it with a secret key (HS256 algorithm), sets 24hr expiry, and returns it.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon orange">4</div>
+            <div class="step-content">
+              <h4>React Stores the Token</h4>
+              <p>The token is saved in localStorage. For every future API call, React reads the token and puts it in the Authorization header: <em>"Bearer eyJhbGci..."</em></p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon red">5</div>
+            <div class="step-content">
+              <h4>JwtFilter Checks Every Request</h4>
+              <p>Before any request reaches a Controller, the JwtFilter intercepts it. It reads the Authorization header, extracts the token, validates the signature and expiry. If valid, the request proceeds. If invalid or missing, it returns 403 Forbidden.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon cyan">6</div>
+            <div class="step-content">
+              <h4>SecurityConfig Defines the Rules</h4>
+              <p>/api/auth/** routes are public (permitAll) — anyone can login/register. All other routes require a valid JWT token (authenticated).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Security Files</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>File</th><th>Purpose</th></tr>
+            <tr><td>JwtUtil.java</td><td>Token factory — <em>generateToken()</em>, <em>extractEmail()</em>, <em>isValid()</em>. Creates and validates JWT tokens using HS256 signing.</td></tr>
+            <tr><td>JwtFilter.java</td><td>Security guard — intercepts every HTTP request, checks for valid Bearer token in Authorization header.</td></tr>
+            <tr><td>SecurityConfig.java</td><td>Rules engine — defines which URLs are public (/api/auth/**) and which need authentication (everything else).</td></tr>
+            <tr><td>WebConfig.java</td><td>CORS config — allows React (port 5173) to make requests to Spring Boot (port 8080).</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CONTROLLERS -->
+    <div class="section" id="controllers">
+      <div class="section-title"><span class="section-num">4</span> Controller Layer — REST APIs</div>
+      <p class="section-subtitle">Receives HTTP requests, processes business logic, returns JSON responses</p>
+
+      <div class="card">
+        <h3>What is a REST API?</h3>
+        <p><strong style="color:#60a5fa">REST</strong> (Representational State Transfer) is an architectural style for web APIs. Each URL represents a resource, and HTTP methods (GET, POST, PUT, DELETE) define what action to perform on that resource.</p>
+        <p style="margin-top:8px">Spring Boot automatically converts Java objects to JSON in responses and JSON request bodies to Java objects.</p>
+      </div>
+
+      <div class="card">
+        <h3>Spring Boot Annotations Explained</h3>
+        <div class="anno-grid">
+          <div class="anno-item">
+            <code>@RestController</code>
+            <span>Marks a class as a REST API controller. All methods return data (JSON), not HTML pages.</span>
+          </div>
+          <div class="anno-item">
+            <code>@RequestMapping("/api/x")</code>
+            <span>Sets the base URL path for all endpoints in this controller.</span>
+          </div>
+          <div class="anno-item">
+            <code>@GetMapping</code>
+            <span>Handles HTTP GET requests — used for fetching/reading data.</span>
+          </div>
+          <div class="anno-item">
+            <code>@PostMapping</code>
+            <span>Handles HTTP POST requests — used for creating new data.</span>
+          </div>
+          <div class="anno-item">
+            <code>@PutMapping("/{id}")</code>
+            <span>Handles HTTP PUT requests — used for updating existing data.</span>
+          </div>
+          <div class="anno-item">
+            <code>@RequestBody</code>
+            <span>Tells Spring to read the JSON body of the request and convert it into a Java object automatically.</span>
+          </div>
+          <div class="anno-item">
+            <code>@RequestParam</code>
+            <span>Reads query parameters from the URL. Example: /api/doctors?specialtyId=1&mode=ONLINE</span>
+          </div>
+          <div class="anno-item">
+            <code>@PathVariable</code>
+            <span>Reads a variable from the URL path. Example: /api/appointments/{id}/cancel — id is the path variable.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Our 5 Controllers</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Controller</th><th>Base URL</th><th>Responsibility</th></tr>
+            <tr><td>AuthController</td><td>/api/auth</td><td>User registration and login. Returns JWT token on successful login.</td></tr>
+            <tr><td>SpecialtyController</td><td>/api/specialties</td><td>List all specialties (patient). Add new specialty (admin).</td></tr>
+            <tr><td>DoctorController</td><td>/api/doctors</td><td>Filter doctors by specialty &amp; mode (patient). Add doctor, list all (admin).</td></tr>
+            <tr><td>SlotController</td><td>/api/slots</td><td>Get available slots for a doctor on a date (patient). Create slots (admin).</td></tr>
+            <tr><td>AppointmentController</td><td>/api/appointments</td><td>Book, cancel, view appointments (patient). Update status, view summary (admin).</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. REPOSITORIES -->
+    <div class="section" id="repositories">
+      <div class="section-title"><span class="section-num">5</span> Repository Layer — Spring Data JPA</div>
+      <p class="section-subtitle">Handles all database operations — you write zero SQL</p>
+
+      <div class="card">
+        <h3>How JpaRepository Works</h3>
+        <p>Spring Data JPA is magic. You create an <strong style="color:#60a5fa">interface</strong> (not a class), extend <strong style="color:#4ade80">JpaRepository</strong>, and Spring automatically provides all CRUD operations.</p>
+
+        <div class="code-block">
+<span class="keyword">public interface</span> <span class="type">UserRepository</span> <span class="keyword">extends</span> <span class="type">JpaRepository</span>&lt;<span class="type">User</span>, <span class="type">Long</span>&gt; {
+    <span class="type">User</span> <span class="string">findByEmail</span>(<span class="type">String</span> email);
+}
+
+<span class="comment">// That's it! You get ALL of these for free:</span>
+<span class="comment">// findAll()       → SELECT * FROM users</span>
+<span class="comment">// findById(id)    → SELECT * FROM users WHERE id = ?</span>
+<span class="comment">// save(user)      → INSERT INTO users (...) VALUES (...)</span>
+<span class="comment">// deleteById(id)  → DELETE FROM users WHERE id = ?</span>
+<span class="comment">// findByEmail(e)  → SELECT * FROM users WHERE email = ?  (custom)</span>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>Key Insight:</strong> Spring reads the method name and generates the SQL query automatically. <strong>findBySpecialtyIdAndMode()</strong> becomes <em>WHERE specialty_id = ? AND mode = ?</em>. You never write SQL.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Our Custom Query Methods</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method Name</th><th>Generated SQL</th></tr>
+            <tr><td>findByEmail(email)</td><td>WHERE email = ?</td></tr>
+            <tr><td>findBySpecialtyIdAndMode(specId, mode)</td><td>WHERE specialty_id = ? AND mode = ?</td></tr>
+            <tr><td>findByDoctorIdAndDateAndIsBooked(id, date, false)</td><td>WHERE doctor_id = ? AND date = ? AND is_booked = false</td></tr>
+            <tr><td>findByPatientId(patientId)</td><td>WHERE patient_id = ?</td></tr>
+            <tr><td>findByBookingDate(date)</td><td>WHERE booking_date = ?</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. ENTITIES -->
+    <div class="section" id="entities">
+      <div class="section-title"><span class="section-num">6</span> Entity / Model Layer</div>
+      <p class="section-subtitle">Java classes that map directly to database tables using JPA annotations</p>
+
+      <div class="card">
+        <h3>JPA Annotations Explained</h3>
+        <div class="anno-grid">
+          <div class="anno-item">
+            <code>@Entity</code>
+            <span>Tells JPA "this class represents a database table". Hibernate creates the table automatically.</span>
+          </div>
+          <div class="anno-item">
+            <code>@Table(name = "users")</code>
+            <span>Custom table name. We use this for User because "user" is a reserved keyword in H2.</span>
+          </div>
+          <div class="anno-item">
+            <code>@Id</code>
+            <span>Marks this field as the primary key of the table.</span>
+          </div>
+          <div class="anno-item">
+            <code>@GeneratedValue(IDENTITY)</code>
+            <span>Auto-increment — the database generates the ID automatically (1, 2, 3...).</span>
+          </div>
+          <div class="anno-item">
+            <code>@ManyToOne</code>
+            <span>Foreign key relationship. Many doctors belong to one specialty. Many appointments belong to one patient.</span>
+          </div>
+          <div class="anno-item">
+            <code>@JoinColumn(name = "x_id")</code>
+            <span>Specifies the foreign key column name in the table.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Our 5 Entities (Database Tables)</h3>
+        <div class="er-grid">
+          <div class="er-card">
+            <h4>User</h4>
+            <div class="er-field"><span class="er-pk">id</span> — Long (Primary Key, Auto)</div>
+            <div class="er-field">name — String</div>
+            <div class="er-field">email — String</div>
+            <div class="er-field">password — String</div>
+            <div class="er-field">role — String (PATIENT / ADMIN)</div>
+          </div>
+          <div class="er-card c2">
+            <h4>Specialty</h4>
+            <div class="er-field"><span class="er-pk">id</span> — Long (Primary Key, Auto)</div>
+            <div class="er-field">name — String (Cardiology, etc.)</div>
+          </div>
+          <div class="er-card c3">
+            <h4>Doctor</h4>
+            <div class="er-field"><span class="er-pk">id</span> — Long (Primary Key, Auto)</div>
+            <div class="er-field">name — String</div>
+            <div class="er-field">mode — String (ONLINE / OFFLINE)</div>
+            <div class="er-field">videoLink — String</div>
+            <div class="er-field">clinicAddress — String</div>
+            <div class="er-field"><span class="er-fk">specialty_id</span> — FK → Specialty</div>
+          </div>
+          <div class="er-card c4">
+            <h4>Slot</h4>
+            <div class="er-field"><span class="er-pk">id</span> — Long (Primary Key, Auto)</div>
+            <div class="er-field">date — String</div>
+            <div class="er-field">startTime — String</div>
+            <div class="er-field">endTime — String</div>
+            <div class="er-field">isBooked — boolean</div>
+            <div class="er-field"><span class="er-fk">doctor_id</span> — FK → Doctor</div>
+          </div>
+          <div class="er-card c5">
+            <h4>Appointment</h4>
+            <div class="er-field"><span class="er-pk">id</span> — Long (Primary Key, Auto)</div>
+            <div class="er-field">status — String (CONFIRMED / COMPLETED / CANCELLED / NO_SHOW)</div>
+            <div class="er-field">bookingDate — String</div>
+            <div class="er-field"><span class="er-fk">patient_id</span> — FK → User</div>
+            <div class="er-field"><span class="er-fk">doctor_id</span> — FK → Doctor</div>
+            <div class="er-field"><span class="er-fk">slot_id</span> — FK → Slot</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Entity Relationships</h3>
+        <div class="diagram"><span class="green">Specialty</span> (1) ◄────── (many) <span class="highlight">Doctor</span>       → A specialty has many doctors
+<span class="highlight">Doctor</span>    (1) ◄────── (many) <span class="purple">Slot</span>         → A doctor has many time slots
+<span class="green">User</span>      (1) ◄────── (many) <span class="red">Appointment</span>  → A patient has many appointments
+<span class="highlight">Doctor</span>    (1) ◄────── (many) <span class="red">Appointment</span>  → A doctor has many appointments
+<span class="purple">Slot</span>      (1) ◄────── (1)    <span class="red">Appointment</span>  → One slot = one appointment</div>
+      </div>
+    </div>
+
+    <!-- 7. DATABASE -->
+    <div class="section" id="database">
+      <div class="section-title"><span class="section-num">7</span> H2 Database</div>
+      <p class="section-subtitle">In-memory relational database — zero setup required</p>
+
+      <div class="card">
+        <h3>What is H2?</h3>
+        <p>H2 is a lightweight, <strong style="color:#facc15">in-memory</strong> SQL database written in Java. "In-memory" means data is stored in RAM, not on disk. When the server stops, all data is lost. When it restarts, tables are recreated from the @Entity classes.</p>
+        <p style="margin-top:12px">For production, you'd switch to MySQL or PostgreSQL — just change one line in <em>application.properties</em>.</p>
+      </div>
+
+      <div class="card">
+        <h3>Configuration (application.properties)</h3>
+        <div class="code-block">
+<span class="comment"># Database URL — "mem" means in-memory, "hackathon" is the DB name</span>
+<span class="annotation">spring.datasource.url</span>=<span class="string">jdbc:h2:mem:hackathon</span>
+
+<span class="comment"># Database driver</span>
+<span class="annotation">spring.datasource.driver-class-name</span>=<span class="string">org.h2.Driver</span>
+
+<span class="comment"># Auto-create/update tables from @Entity classes</span>
+<span class="annotation">spring.jpa.hibernate.ddl-auto</span>=<span class="string">update</span>
+
+<span class="comment"># Show SQL queries in console (useful for debugging)</span>
+<span class="annotation">spring.jpa.show-sql</span>=<span class="string">true</span>
+
+<span class="comment"># Enable H2 web console at /h2-console</span>
+<span class="annotation">spring.h2.console.enabled</span>=<span class="string">true</span>
+
+<span class="comment"># Server port</span>
+<span class="annotation">server.port</span>=<span class="string">8080</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>DataSeeder — Auto-creates Admin Account</h3>
+        <p>On server startup, <strong style="color:#60a5fa">DataSeeder.java</strong> implements <em>CommandLineRunner</em> — a Spring interface that runs code automatically when the application starts. It checks if admin@demo.com exists, and if not, creates the admin user.</p>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Role</th><th>Email</th><th>Password</th></tr>
+            <tr><td>ADMIN</td><td>admin@demo.com</td><td>admin123</td></tr>
+            <tr><td>PATIENT</td><td>(any registered user)</td><td>(their password)</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. ALL ENDPOINTS -->
+    <div class="section" id="endpoints">
+      <div class="section-title"><span class="section-num">8</span> All API Endpoints</div>
+      <p class="section-subtitle">Complete list of every REST API endpoint in the system</p>
+
+      <div class="card">
+        <h3>Authentication</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/auth/register</td><td>Public</td><td>Register a new patient account</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/auth/login</td><td>Public</td><td>Login and receive JWT token</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Specialties</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/specialties</td><td>Authenticated</td><td>List all specialties</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/specialties</td><td>Admin</td><td>Add a new specialty</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Doctors</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/doctors?specialtyId=1&mode=ONLINE</td><td>Authenticated</td><td>Filter doctors by specialty and mode</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/doctors/all</td><td>Admin</td><td>List all doctors</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/doctors</td><td>Admin</td><td>Register a new doctor</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Time Slots</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/slots?doctorId=1&date=2026-03-30</td><td>Authenticated</td><td>Get available (unbooked) slots for a doctor on a date</td></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/slots</td><td>Admin</td><td>Create a new time slot for a doctor</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Appointments</h3>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+            <tr><td><span class="method post">POST</span></td><td>/api/appointments</td><td>Patient</td><td>Book an appointment (checks double booking)</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/appointments/my?email=x</td><td>Patient</td><td>View my appointments</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/appointments/all?date=x</td><td>Admin</td><td>All appointments for a date</td></tr>
+            <tr><td><span class="method get">GET</span></td><td>/api/appointments/summary?date=x</td><td>Admin</td><td>Summary stats by mode, specialty, status</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/appointments/{id}/cancel</td><td>Patient</td><td>Cancel appointment (frees the slot)</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td>/api/appointments/{id}/status</td><td>Admin</td><td>Mark as COMPLETED or NO_SHOW</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. COMPLETE FLOW -->
+    <div class="section" id="flow">
+      <div class="section-title"><span class="section-num">9</span> Complete User Flows</div>
+      <p class="section-subtitle">Step-by-step journey for both Patient and Admin</p>
+
+      <div class="card">
+        <h3>Patient Flow</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-icon blue">1</div>
+            <div class="step-content">
+              <h4>Register</h4>
+              <p>Patient fills in name, email, password → POST /api/auth/register → account created with role PATIENT.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon green">2</div>
+            <div class="step-content">
+              <h4>Login</h4>
+              <p>Enter email &amp; password → POST /api/auth/login → server validates → returns JWT token → stored in localStorage.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon purple">3</div>
+            <div class="step-content">
+              <h4>Select Mode</h4>
+              <p>Choose ONLINE (teleconsultation) or OFFLINE (in-clinic visit).</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon orange">4</div>
+            <div class="step-content">
+              <h4>Browse Specialties &amp; Doctors</h4>
+              <p>GET /api/specialties → select one → GET /api/doctors?specialtyId=X&mode=Y → see matching doctors.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon cyan">5</div>
+            <div class="step-content">
+              <h4>Pick Slot &amp; Book</h4>
+              <p>Select doctor → pick date → GET /api/slots → see available times → click Book → POST /api/appointments → slot locked, appointment CONFIRMED.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon red">6</div>
+            <div class="step-content">
+              <h4>View &amp; Manage Appointments</h4>
+              <p>GET /api/appointments/my → see all bookings with doctor name, time, mode, status. Can cancel confirmed appointments (slot gets freed).</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Admin Flow</h3>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-icon blue">1</div>
+            <div class="step-content">
+              <h4>Login as Admin</h4>
+              <p>admin@demo.com / admin123 → gets JWT token with ADMIN role → redirected to /admin panel.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon green">2</div>
+            <div class="step-content">
+              <h4>Add Specialties</h4>
+              <p>POST /api/specialties → add Cardiology, Dermatology, Pediatrics, etc.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon purple">3</div>
+            <div class="step-content">
+              <h4>Register Doctors</h4>
+              <p>POST /api/doctors → add doctors with name, specialty, mode (ONLINE/OFFLINE), video link or clinic address.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon orange">4</div>
+            <div class="step-content">
+              <h4>Create Time Slots</h4>
+              <p>POST /api/slots → create available appointment slots for each doctor with date, start time, end time.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <div class="step-icon red">5</div>
+            <div class="step-content">
+              <h4>Manage Appointments &amp; View Summary</h4>
+              <p>Select date → see all appointments → mark as COMPLETED or NO_SHOW → view summary stats grouped by mode, specialty, and status.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>What Happens During Booking (Detailed)</h3>
+        <div class="diagram"><span class="highlight">1.</span> Patient clicks "Book" on a time slot
+<span class="highlight">2.</span> React sends: <span class="green">POST /api/appointments</span> { slotId: 5, patientEmail: "john@email.com" }
+       with header: <span class="yellow">Authorization: Bearer eyJhbGci...</span>
+<span class="highlight">3.</span> Request hits Spring Boot server (port 8080)
+<span class="highlight">4.</span> <span class="yellow">CORS Filter</span> → origin is localhost:5173 → ALLOWED
+<span class="highlight">5.</span> <span class="red">JWT Filter</span> → reads token → validates signature → valid → PASS
+<span class="highlight">6.</span> <span class="green">AppointmentController.book()</span> is called
+       → slotRepository.findById(5)
+<span class="highlight">7.</span> <span class="purple">Hibernate</span> generates: SELECT * FROM SLOT WHERE ID = 5
+       → H2 returns slot data → converted to Java Slot object
+<span class="highlight">8.</span> Controller checks: slot.isBooked == false? → YES → proceed
+       → sets slot.isBooked = <span class="red">true</span> → saves slot (prevents double booking)
+       → creates new Appointment (status = CONFIRMED, date = today)
+       → saves appointment
+<span class="highlight">9.</span> Spring converts Appointment object → <span class="green">JSON response</span>
+<span class="highlight">10.</span> React receives response → shows success alert → refreshes list</div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center; padding:48px 0; color:#475569; border-top: 1px solid rgba(255,255,255,0.06); margin-top:40px;">
+      <p style="font-size:18px; font-weight:700; color:#94a3b8;">Doctor Appointment System</p>
+      <p style="font-size:14px; margin-top:8px;">Built with React + Spring Boot + JWT + H2 | HCL Hackathon 2026</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
